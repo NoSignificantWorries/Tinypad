@@ -4,6 +4,10 @@
 
 #include <iostream>
 
+
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode);
+
+
 int main() {
     //Инициализация GLFW
     glfwInit();
@@ -27,6 +31,8 @@ int main() {
     }
     glfwMakeContextCurrent(window);
 
+    glfwSetKeyCallback(window, key_callback);
+
     glewExperimental = GL_TRUE;
     if (glewInit() != GLEW_OK)
     {
@@ -38,14 +44,33 @@ int main() {
     glfwGetFramebufferSize(window, &width, &height);
     glViewport(0, 0, width, height);
 
+    GLfloat vertices[] = {
+         -0.5f , -0.5f, 0.0f,
+          0.5f , -0.5f, 0.0f,
+          0.0f ,  0.5f, 0.0f
+    };
+
     while(!glfwWindowShouldClose(window))
     {
         glfwPollEvents();
+
+        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
+
         glfwSwapBuffers(window);
     }
 
     glfwTerminate();
 
     return 0;
+}
+
+
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode)
+{
+    // Когда пользователь нажимает ESC, мы устанавливаем свойство WindowShouldClose в true, 
+    // и приложение после этого закроется
+    if(key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+        glfwSetWindowShouldClose(window, GL_TRUE);
 }
 
