@@ -96,7 +96,8 @@ int main()
     };
     GLuint indices[] = {  // Note that we start from 0!
         0, 1, 3,  // First Triangle
-        1, 2, 3   // Second Triangle
+        1, 2, 3,   // Second Triangle
+        3, 2, 1
     };
     GLuint VBO, VAO, EBO;
     glGenVertexArrays(1, &VAO);
@@ -117,6 +118,7 @@ int main()
     glBindBuffer(GL_ARRAY_BUFFER, 0); // Note that this is allowed, the call to glVertexAttribPointer registered VBO as the currently bound vertex buffer object so afterwards we can safely unbind
 
     glBindVertexArray(0);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
     while(!glfwWindowShouldClose(window))
     {
@@ -128,7 +130,7 @@ int main()
         glUseProgram(shaderProgram);
         glBindVertexArray(VAO);
         //glDrawArrays(GL_TRIANGLES, 0, 6);
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        glDrawElements(GL_TRIANGLES, 9, GL_UNSIGNED_INT, 0);
         glBindVertexArray(0);
 
         glfwSwapBuffers(window);
