@@ -1,0 +1,1215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tinypad</title>
+    <script src="https://cdn.tailwindcss.com/3.4.16"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#4f46e5',
+                        secondary: '#6366f1'
+                    },
+                    borderRadius: {
+                        'none': '0px',
+                        'sm': '4px',
+                        DEFAULT: '8px',
+                        'md': '12px',
+                        'lg': '16px',
+                        'xl': '20px',
+                        '2xl': '24px',
+                        '3xl': '32px',
+                        'full': '9999px',
+                        'button': '8px'
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="bg-white">
+    <div class="flex flex-col h-screen">
+        <!-- Menu in top left corner -->
+        <div class="absolute left-4 top-4 z-50">
+            <div class="menu-container">
+                <button id="menuButton" class="bg-white shadow-md hover:bg-gray-50 p-2 rounded-lg !rounded-button whitespace-nowrap">
+                    <div class="w-6 h-6 flex flex-col gap-1.5 items-center justify-center">
+                        <div class="w-4 h-0.5 bg-gray-600 rounded-full"></div>
+                        <div class="w-4 h-0.5 bg-gray-600 rounded-full"></div>
+                        <div class="w-4 h-0.5 bg-gray-600 rounded-full"></div>
+                    </div>
+                </button>
+                <div id="mainMenu" class="menu bg-white shadow-lg rounded-lg border border-gray-200 w-48">
+                    <div class="py-1">
+                        <div class="menu-item">
+                            <div class="px-4 py-2 text-gray-700 hover:bg-gray-100 flex justify-between items-center cursor-pointer">
+                                <span data-i18n="file">File</span>
+                                <div class="w-4 h-4 flex items-center justify-center">
+                                    <i class="ri-arrow-right-s-line"></i>
+                                </div>
+                            </div>
+                            <div class="submenu bg-white shadow-lg rounded-lg border border-gray-200 w-48">
+                                <div class="py-1">
+                                    <div class="px-4 py-2 text-gray-700 hover:bg-gray-100 cursor-pointer" data-i18n="newFile">New File</div>
+                                    <div class="px-4 py-2 text-gray-700 hover:bg-gray-100 cursor-pointer" data-i18n="openFile">Open File</div>
+                                    <div class="px-4 py-2 text-gray-700 hover:bg-gray-100 cursor-pointer" data-i18n="save">Save</div>
+                                    <div class="px-4 py-2 text-gray-700 hover:bg-gray-100 cursor-pointer" data-i18n="saveAs">Save As</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="menu-item">
+                            <div class="px-4 py-2 text-gray-700 hover:bg-gray-100 flex justify-between items-center cursor-pointer">
+                                <span data-i18n="edit">Edit</span>
+                                <div class="w-4 h-4 flex items-center justify-center">
+                                    <i class="ri-arrow-right-s-line"></i>
+                                </div>
+                            </div>
+                            <div class="submenu bg-white shadow-lg rounded-lg border border-gray-200 w-48">
+                                <div class="py-1">
+                                    <div class="px-4 py-2 text-gray-700 hover:bg-gray-100 cursor-pointer" data-i18n="redo">Redo</div>
+                                    <div class="px-4 py-2 text-gray-700 hover:bg-gray-100 cursor-pointer" data-i18n="undo">Undo</div>
+                                    <div class="px-4 py-2 text-gray-700 hover:bg-gray-100 cursor-pointer" data-i18n="copy">Copy</div>
+                                    <div class="px-4 py-2 text-gray-700 hover:bg-gray-100 cursor-pointer" data-i18n="cut">Cut</div>
+                                    <div class="px-4 py-2 text-gray-700 hover:bg-gray-100 cursor-pointer" data-i18n="paste">Paste</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="px-4 py-2 text-gray-700 hover:bg-gray-100 cursor-pointer" id="hideToolbarButton" data-i18n="hideTools">Hide Tools</div>
+                        <div class="px-4 py-2 text-gray-700 hover:bg-gray-100 cursor-pointer" id="openSettingsButton" data-i18n="settings">Settings</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Show toolbar button -->
+        <div class="show-toolbar-button" id="showToolbarButton">
+            <i class="ri-tools-fill text-xl"></i>
+        </div>
+
+        <!-- Main area -->
+        <div class="flex-1 relative overflow-hidden">
+            <!-- Toolbar -->
+            <div id="toolbar" class="toolbar vertical absolute left-4 top-1/2 -translate-y-1/2 bg-white border border-gray-200 rounded-xl shadow-md flex">
+                <div class="toolbar-rotate-button">
+                    <i class="ri-refresh-line text-xs"></i>
+                </div>
+                
+                <!-- Text Tool -->
+                <div class="p-1 border-b border-gray-200 relative">
+                    <button class="tool-button w-10 h-10 rounded flex items-center justify-center hover:bg-gray-50 active:bg-gray-100" data-tool="text">
+                        <div class="w-6 h-6 flex items-center justify-center font-bold text-lg">
+                            T
+                        </div>
+                    </button>
+                </div>
+                
+                <div class="w-8 h-px bg-gray-200 mx-auto"></div>
+                
+                <!-- Line Tool -->
+                <div class="p-1 border-b border-gray-200 relative">
+                    <button class="tool-button w-10 h-10 rounded flex items-center justify-center hover:bg-gray-50 active:bg-gray-100" data-tool="line" id="lineToolButton">
+                        <div class="w-6 h-6 flex items-center justify-center">
+                            <i class="ri-pencil-line"></i>
+                        </div>
+                    </button>
+                </div>
+                
+                <div class="w-8 h-px bg-gray-200 mx-auto"></div>
+                
+                <!-- Shape Tool -->
+                <div class="p-1 border-b border-gray-200 relative">
+                    <button class="tool-button w-10 h-10 rounded flex items-center justify-center hover:bg-gray-50 active:bg-gray-100" data-tool="shape" id="shapeToolButton">
+                        <div class="w-6 h-6 flex items-center justify-center">
+                            <i class="ri-shapes-line"></i>
+                        </div>
+                    </button>
+                </div>
+                
+                <div class="w-8 h-px bg-gray-200 mx-auto"></div>
+                
+                <!-- Eraser Tool -->
+                <div class="p-1 border-b border-gray-200 relative">
+                    <button class="tool-button w-10 h-10 rounded flex items-center justify-center hover:bg-gray-50 active:bg-gray-100" data-tool="eraser" id="eraserToolButton">
+                        <div class="w-6 h-6 flex items-center justify-center">
+                            <i class="ri-eraser-line"></i>
+                        </div>
+                    </button>
+                </div>
+                
+                <div class="w-8 h-px bg-gray-200 mx-auto"></div>
+                
+                <!-- Color Palette Tool -->
+                <div class="p-1 border-b border-gray-200 relative">
+                    <button class="tool-button w-10 h-10 rounded flex items-center justify-center hover:bg-gray-50 active:bg-gray-100" data-tool="color" id="colorToolButton">
+                        <div class="w-6 h-6 flex items-center justify-center">
+                            <i class="ri-palette-line"></i>
+                        </div>
+                        <div class="absolute bottom-0 right-0 w-3 h-3 rounded-full" id="colorIndicator" style="background-color: #000000;"></div>
+                    </button>
+                </div>
+                
+                <div class="w-8 h-px bg-gray-200 mx-auto"></div>
+                
+                <!-- Zoom Controls -->
+                <div class="p-1 flex flex-col items-center toolbar-zoom">
+                    <button class="w-10 h-8 rounded flex items-center justify-center hover:bg-gray-50 active:bg-gray-100" id="zoomOut">
+                        <div class="w-5 h-5 flex items-center justify-center">
+                            <i class="ri-subtract-line"></i>
+                        </div>
+                    </button>
+                    <div class="text-xs text-gray-600 my-1" id="zoomText">100%</div>
+                    <button class="w-10 h-8 rounded flex items-center justify-center hover:bg-gray-50 active:bg-gray-100" id="zoomIn">
+                        <div class="w-5 h-5 flex items-center justify-center">
+                            <i class="ri-add-line"></i>
+                        </div>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Tool Panels -->
+            <!-- Text Formatting Panel -->
+            <div class="tool-panel text-panel" id="textPanel">
+                <div class="text-options">
+                    <div class="text-option">
+                        <input type="checkbox" id="boldOption" class="w-4 h-4">
+                        <label for="boldOption" data-i18n="bold">Bold</label>
+                    </div>
+                    <div class="text-option">
+                        <input type="checkbox" id="italicOption" class="w-4 h-4">
+                        <label for="italicOption" data-i18n="italic">Italic</label>
+                    </div>
+                    <div class="text-option">
+                        <input type="checkbox" id="underlineOption" class="w-4 h-4">
+                        <label for="underlineOption" data-i18n="underline">Underline</label>
+                    </div>
+                    <div class="text-size-controls">
+                        <label data-i18n="size">Size:</label>
+                        <button class="text-size-button" id="decreaseTextSize">
+                            <i class="ri-subtract-line"></i>
+                        </button>
+                        <div class="text-size-value" id="textSizeValue">16</div>
+                        <button class="text-size-button" id="increaseTextSize">
+                            <i class="ri-add-line"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Line Options Panel -->
+            <div class="tool-panel line-panel" id="linePanel">
+                <div class="line-options">
+                    <div class="option-button" data-line-type="solid">
+                        <div class="option-icon">
+                            <i class="ri-pencil-line"></i>
+                        </div>
+                        <div class="option-label" data-i18n="solidLine">Solid Line</div>
+                    </div>
+                    <div class="option-button" data-line-type="dashed">
+                        <div class="option-icon">
+                            <i class="ri-pencil-line dashed-icon"></i>
+                        </div>
+                        <div class="option-label" data-i18n="dashedLine">Dashed Line</div>
+                    </div>
+                    <div class="option-button" data-line-type="dotted">
+                        <div class="option-icon">
+                            <i class="ri-drag-move-2-line dotted-icon"></i>
+                        </div>
+                        <div class="option-label" data-i18n="dottedLine">Dotted Line</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Shape Options Panel -->
+            <div class="tool-panel shape-panel" id="shapePanel">
+                <div class="basic-shapes">
+                    <div class="option-button" data-shape="rectangle">
+                        <div class="option-icon">
+                            <i class="ri-checkbox-blank-line"></i>
+                        </div>
+                        <div class="option-label" data-i18n="rectangle">Rectangle</div>
+                    </div>
+                    <div class="option-button" data-shape="circle">
+                        <div class="option-icon">
+                            <i class="ri-checkbox-blank-circle-line"></i>
+                        </div>
+                        <div class="option-label" data-i18n="circle">Circle</div>
+                    </div>
+                    <div class="option-button" data-shape="triangle">
+                        <div class="option-icon">
+                            <i class="ri-triangle-line"></i>
+                        </div>
+                        <div class="option-label" data-i18n="triangle">Triangle</div>
+                    </div>
+                    <div class="option-button" data-shape="star">
+                        <div class="option-icon">
+                            <i class="ri-star-line"></i>
+                        </div>
+                        <div class="option-label" data-i18n="star">Star</div>
+                    </div>
+                    <div class="option-button" data-shape="arrow">
+                        <div class="option-icon">
+                            <i class="ri-arrow-right-line"></i>
+                        </div>
+                        <div class="option-label" data-i18n="arrow">Arrow</div>
+                    </div>
+                </div>
+                
+                <div class="more-shapes-button" id="moreShapesButton">
+                    <span data-i18n="moreShapes">More shapes</span>
+                    <i class="ri-arrow-right-line"></i>
+                </div>
+            </div>
+            
+            <!-- Eraser Panel -->
+            <div class="tool-panel eraser-panel" id="eraserPanel">
+                <div class="eraser-options">
+                    <div class="eraser-option" data-eraser-type="full">
+                        <div class="eraser-icon">
+                            <i class="ri-eraser-line"></i>
+                        </div>
+                        <div class="eraser-label" data-i18n="fullEraser">Full Eraser</div>
+                    </div>
+                    <div class="eraser-option" data-eraser-type="partial">
+                        <div class="eraser-icon">
+                            <i class="ri-eraser-line dashed-icon"></i>
+                        </div>
+                        <div class="eraser-label" data-i18n="partialEraser">Partial Eraser</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Color Panel -->
+            <div class="tool-panel color-panel" id="colorPanel">
+                <div class="color-palette">
+                    <div class="color-option selected" style="background-color: #000000;" data-color="#000000"></div>
+                    <div class="color-option" style="background-color: #ffffff; border: 1px solid #ccc;" data-color="#ffffff"></div>
+                    <div class="color-option" style="background-color: #ff0000;" data-color="#ff0000"></div>
+                    <div class="color-option" style="background-color: #00ff00;" data-color="#00ff00"></div>
+                    <div class="color-option" style="background-color: #0000ff;" data-color="#0000ff"></div>
+                    <div class="color-option" style="background-color: #ffff00;" data-color="#ffff00"></div>
+                    <div class="color-option" style="background-color: #ff00ff;" data-color="#ff00ff"></div>
+                    <div class="color-option" style="background-color: #00ffff;" data-color="#00ffff"></div>
+                    <div class="color-option" style="background-color: #ff8800;" data-color="#ff8800"></div>
+                    <div class="color-option" style="background-color: #8800ff;" data-color="#8800ff"></div>
+                    <div class="color-option" style="background-color: #0088ff;" data-color="#0088ff"></div>
+                    <div class="color-option" style="background-color: #888888;" data-color="#888888"></div>
+                </div>
+                <div class="custom-color">
+                    <label data-i18n="custom">Custom:</label>
+                    <input type="color" id="customColorPicker" value="#000000">
+                </div>
+                <div class="current-color-display">
+                    <span data-i18n="current">Current:</span>
+                    <div class="current-color-box" id="currentColorBox" style="background-color: #000000;"></div>
+                </div>
+            </div>
+            
+            <!-- Canvas area -->
+            <canvas id="drawingCanvas" class="canvas-area w-full h-full"></canvas>
+        </div>
+        
+        <!-- Settings Panel -->
+        <div class="settings-panel" id="settingsPanel">
+            <div class="settings-header">
+                <div class="settings-title" data-i18n="settings">Settings</div>
+                <div class="settings-close" id="closeSettingsButton">
+                    <i class="ri-close-line"></i>
+                </div>
+            </div>
+            <div class="settings-section">
+                <div class="settings-section-title" data-i18n="language">Language</div>
+                <div class="language-selector">
+                    <div class="language-option selected" data-lang="en">English</div>
+                    <div class="language-option" data-lang="ru">Русский</div>
+                </div>
+            </div>
+            <div class="settings-footer">
+                <button class="settings-button settings-cancel" id="cancelSettingsButton" data-i18n="cancel">Cancel</button>
+                <button class="settings-button settings-save" id="saveSettingsButton" data-i18n="save">Save</button>
+            </div>
+        </div>
+        
+        <!-- Shapes Modal -->
+        <div class="shapes-modal-overlay" id="shapesModalOverlay">
+            <div class="shapes-modal">
+                <div class="shapes-modal-header">
+                    <div class="shapes-modal-title" data-i18n="selectShape">Select Shape</div>
+                    <div class="shapes-modal-close" id="closeShapesModal">
+                        <i class="ri-close-line"></i>
+                    </div>
+                </div>
+                <div class="shapes-grid">
+                    <div class="shape-item" data-shape="square">
+                        <div class="shape-icon">
+                            <i class="ri-square-line"></i>
+                        </div>
+                        <div class="shape-name" data-i18n="square">Square</div>
+                    </div>
+                    <div class="shape-item" data-shape="ellipse">
+                        <div class="shape-icon">
+                            <i class="ri-oval-line"></i>
+                        </div>
+                        <div class="shape-name" data-i18n="ellipse">Ellipse</div>
+                    </div>
+                    <div class="shape-item" data-shape="right-triangle">
+                        <div class="shape-icon">
+                            <i class="ri-corner-right-down-line"></i>
+                        </div>
+                        <div class="shape-name" data-i18n="rightTriangle">Right Triangle</div>
+                    </div>
+                    <div class="shape-item" data-shape="pentagon">
+                        <div class="shape-icon">
+                            <i class="ri-pentagon-line"></i>
+                        </div>
+                        <div class="shape-name" data-i18n="pentagon">Pentagon</div>
+                    </div>
+                    <div class="shape-item" data-shape="hexagon">
+                        <div class="shape-icon">
+                            <i class="ri-hexagon-line"></i>
+                        </div>
+                        <div class="shape-name" data-i18n="hexagon">Hexagon</div>
+                    </div>
+                    <div class="shape-item" data-shape="octagon">
+                        <div class="shape-icon">
+                            <i class="ri-stop-line"></i>
+                        </div>
+                        <div class="shape-name" data-i18n="octagon">Octagon</div>
+                    </div>
+                    <div class="shape-item" data-shape="heart">
+                        <div class="shape-icon">
+                            <i class="ri-heart-line"></i>
+                        </div>
+                        <div class="shape-name" data-i18n="heart">Heart</div>
+                    </div>
+                    <div class="shape-item" data-shape="double-arrow">
+                        <div class="shape-icon">
+                            <i class="ri-arrow-left-right-line"></i>
+                        </div>
+                        <div class="shape-name" data-i18n="doubleArrow">Double Arrow</div>
+                    </div>
+                    <div class="shape-item" data-shape="diamond">
+                        <div class="shape-icon">
+                            <i class="ri-vip-diamond-line"></i>
+                        </div>
+                        <div class="shape-name" data-i18n="diamond">Diamond</div>
+                    </div>
+                    <div class="shape-item" data-shape="cloud">
+                        <div class="shape-icon">
+                            <i class="ri-cloud-line"></i>
+                        </div>
+                        <div class="shape-name" data-i18n="cloud">Cloud</div>
+                    </div>
+                    <div class="shape-item" data-shape="speech-bubble">
+                        <div class="shape-icon">
+                            <i class="ri-chat-1-line"></i>
+                        </div>
+                        <div class="shape-name" data-i18n="speechBubble">Speech Bubble</div>
+                    </div>
+                    <div class="shape-item" data-shape="thought-bubble">
+                        <div class="shape-icon">
+                            <i class="ri-chat-3-line"></i>
+                        </div>
+                        <div class="shape-name" data-i18n="thoughtBubble">Thought Bubble</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Language translations
+            const translations = {
+                en: {
+                    file: "File",
+                    newFile: "New File",
+                    openFile: "Open File",
+                    save: "Save",
+                    saveAs: "Save As",
+                    edit: "Edit",
+                    redo: "Redo",
+                    undo: "Undo",
+                    copy: "Copy",
+                    cut: "Cut",
+                    paste: "Paste",
+                    hideTools: "Hide Tools",
+                    settings: "Settings",
+                    bold: "Bold",
+                    italic: "Italic",
+                    underline: "Underline",
+                    size: "Size:",
+                    solidLine: "Solid Line",
+                    dashedLine: "Dashed Line",
+                    dottedLine: "Dotted Line",
+                    rectangle: "Rectangle",
+                    circle: "Circle",
+                    triangle: "Triangle",
+                    star: "Star",
+                    arrow: "Arrow",
+                    moreShapes: "More shapes",
+                    square: "Square",
+                    ellipse: "Ellipse",
+                    rightTriangle: "Right Triangle",
+                    pentagon: "Pentagon",
+                    hexagon: "Hexagon",
+                    octagon: "Octagon",
+                    heart: "Heart",
+                    doubleArrow: "Double Arrow",
+                    diamond: "Diamond",
+                    cloud: "Cloud",
+                    speechBubble: "Speech Bubble",
+                    thoughtBubble: "Thought Bubble",
+                    fullEraser: "Full Eraser",
+                    partialEraser: "Partial Eraser",
+                    custom: "Custom:",
+                    current: "Current:",
+                    language: "Language",
+                    cancel: "Cancel",
+                    selectShape: "Select Shape"
+                },
+                ru: {
+                    file: "Файл",
+                    newFile: "Новый файл",
+                    openFile: "Открыть файл",
+                    save: "Сохранить",
+                    saveAs: "Сохранить как",
+                    edit: "Правка",
+                    redo: "Повторить",
+                    undo: "Отменить",
+                    copy: "Копировать",
+                    cut: "Вырезать",
+                    paste: "Вставить",
+                    hideTools: "Скрыть инструменты",
+                    settings: "Настройки",
+                    bold: "Жирный",
+                    italic: "Курсив",
+                    underline: "Подчеркнутый",
+                    size: "Размер:",
+                    solidLine: "Сплошная линия",
+                    dashedLine: "Пунктирная линия",
+                    dottedLine: "Точечная линия",
+                    rectangle: "Прямоугольник",
+                    circle: "Круг",
+                    triangle: "Треугольник",
+                    star: "Звезда",
+                    arrow: "Стрелка",
+                    moreShapes: "Больше фигур",
+                    square: "Квадрат",
+                    ellipse: "Эллипс",
+                    rightTriangle: "Прямоугольный треугольник",
+                    pentagon: "Пятиугольник",
+                    hexagon: "Шестиугольник",
+                    octagon: "Восьмиугольник",
+                    heart: "Сердце",
+                    doubleArrow: "Двойная стрелка",
+                    diamond: "Ромб",
+                    cloud: "Облако",
+                    speechBubble: "Облако речи",
+                    thoughtBubble: "Облако мысли",
+                    fullEraser: "Полный ластик",
+                    partialEraser: "Частичный ластик",
+                    custom: "Свой:",
+                    current: "Текущий:",
+                    language: "Язык",
+                    cancel: "Отмена",
+                    selectShape: "Выбрать фигуру"
+                }
+            };
+            
+            // Current language
+            let currentLang = 'en';
+            
+            // Apply translations
+            function applyTranslations() {
+                const elements = document.querySelectorAll('[data-i18n]');
+                elements.forEach(el => {
+                    const key = el.getAttribute('data-i18n');
+                    if (translations[currentLang][key]) {
+                        el.textContent = translations[currentLang][key];
+                    }
+                });
+            }
+            
+            // Menu handling
+            const menuButton = document.getElementById('menuButton');
+            const mainMenu = document.getElementById('mainMenu');
+            
+            menuButton.addEventListener('click', function() {
+                if (mainMenu.style.display === 'block') {
+                    mainMenu.style.display = 'none';
+                } else {
+                    mainMenu.style.display = 'block';
+                }
+            });
+            
+            // Close menu when clicking outside
+            document.addEventListener('click', function(event) {
+                if (!menuButton.contains(event.target) && !mainMenu.contains(event.target)) {
+                    mainMenu.style.display = 'none';
+                }
+            });
+            
+            // Application state
+            window.appState = {
+                activeTool: null,
+                toolSettings: {
+                    text: {
+                        bold: false,
+                        italic: false,
+                        underline: false,
+                        size: 16
+                    },
+                    line: {
+                        type: 'solid' // 'solid', 'dashed', 'dotted'
+                    },
+                    shape: {
+                        type: 'rectangle' // 'rectangle', 'circle', 'triangle', etc.
+                    },
+                    eraser: {
+                        type: 'full' // '  etc.
+                    },
+                    eraser: {
+                        type: 'full' // 'full', 'partial'
+                    },
+                    color: '#000000'
+                },
+                zoom: 100
+            };
+            
+            // Tool buttons and panels
+            const toolButtons = document.querySelectorAll('.tool-button');
+            const toolPanels = {
+                text: document.getElementById('textPanel'),
+                line: document.getElementById('linePanel'),
+                shape: document.getElementById('shapePanel'),
+                eraser: document.getElementById('eraserPanel'),
+                color: document.getElementById('colorPanel')
+            };
+            let activePanel = null;
+            
+            // Position panel based on toolbar orientation and screen position
+            function positionPanel(button, panel) {
+                const toolbar = document.getElementById('toolbar');
+                const isVertical = toolbar.classList.contains('vertical');
+                const isDockedRight = toolbar.classList.contains('docked-right');
+                const isDockedBottom = toolbar.classList.contains('docked-bottom');
+                const buttonRect = button.getBoundingClientRect();
+                const panelWidth = panel.offsetWidth || 180; // Default width if not yet rendered
+                const panelHeight = panel.offsetHeight || 200; // Default height if not yet rendered
+                const windowHeight = window.innerHeight;
+                const windowWidth = window.innerWidth;
+                
+                // Check if panel would go off screen
+                const wouldGoOffBottom = buttonRect.bottom + panelHeight > windowHeight;
+                const wouldGoOffRight = buttonRect.right + panelWidth > windowWidth;
+                const wouldGoOffLeft = buttonRect.left - panelWidth < 0;
+                
+                if (isVertical) {
+                    // Position panel to the right or left of the toolbar
+                    if (isDockedRight || wouldGoOffRight) {
+                        panel.style.right = (windowWidth - buttonRect.left) + 'px';
+                        panel.style.left = 'auto';
+                    } else {
+                        panel.style.left = (buttonRect.right) + 'px';
+                        panel.style.right = 'auto';
+                    }
+                    
+                    // Position vertically
+                    if (wouldGoOffBottom) {
+                        panel.style.bottom = (windowHeight - buttonRect.top) + 'px';
+                        panel.style.top = 'auto';
+                    } else {
+                        panel.style.top = buttonRect.top + 'px';
+                        panel.style.bottom = 'auto';
+                    }
+                } else {
+                    // Position horizontally for horizontal toolbar
+                    if (wouldGoOffLeft) {
+                        panel.style.left = '0px';
+                    } else if (wouldGoOffRight) {
+                        panel.style.right = '0px';
+                        panel.style.left = 'auto';
+                    } else {
+                        panel.style.left = buttonRect.left + 'px';
+                        panel.style.right = 'auto';
+                    }
+                    
+                    // Position above or below toolbar
+                    if (isDockedBottom || wouldGoOffBottom) {
+                        panel.style.bottom = (windowHeight - buttonRect.top) + 'px';
+                        panel.style.top = 'auto';
+                    } else {
+                        panel.style.top = (buttonRect.bottom) + 'px';
+                        panel.style.bottom = 'auto';
+                    }
+                }
+            }
+            
+            // Show panel for a tool
+            function showPanel(toolName) {
+                // Hide any currently open panel
+                if (activePanel) {
+                    activePanel.style.display = 'none';
+                }
+                
+                const panel = toolPanels[toolName];
+                if (!panel) return;
+                
+                const button = document.querySelector(`.tool-button[data-tool="${toolName}"]`);
+                if (!button) return;
+                
+                // Show the new panel
+                positionPanel(button, panel);
+                panel.style.display = 'block';
+                activePanel = panel;
+            }
+            
+            // Set active tool
+            function setActiveTool(toolName) {
+                // Remove active class from all tools
+                toolButtons.forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                
+                // Add active class to selected tool
+                const selectedTool = document.querySelector(`.tool-button[data-tool="${toolName}"]`);
+                if (selectedTool) {
+                    selectedTool.classList.add('active');
+                    appState.activeTool = toolName;
+                }
+            }
+            
+            // Tool button click event
+            toolButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const toolName = this.getAttribute('data-tool');
+                    setActiveTool(toolName);
+                    
+                    // Show the corresponding panel
+                    showPanel(toolName);
+                });
+            });
+            
+            // Text formatting options
+            document.getElementById('boldOption').addEventListener('change', function() {
+                appState.toolSettings.text.bold = this.checked;
+            });
+            
+            document.getElementById('italicOption').addEventListener('change', function() {
+                appState.toolSettings.text.italic = this.checked;
+            });
+            
+            document.getElementById('underlineOption').addEventListener('change', function() {
+                appState.toolSettings.text.underline = this.checked;
+            });
+            
+            // Text size controls
+            const textSizeValue = document.getElementById('textSizeValue');
+            const increaseTextSize = document.getElementById('increaseTextSize');
+            const decreaseTextSize = document.getElementById('decreaseTextSize');
+            
+            increaseTextSize.addEventListener('click', function(e) {
+                e.preventDefault(); // Prevent default behavior
+                e.stopPropagation(); // Stop event propagation
+                if (appState.toolSettings.text.size < 100) {
+                    appState.toolSettings.text.size += 1;
+                    textSizeValue.textContent = appState.toolSettings.text.size;
+                }
+                return false; // Prevent any default behavior
+            });
+            
+            decreaseTextSize.addEventListener('click', function(e) {
+                e.preventDefault(); // Prevent default behavior
+                e.stopPropagation(); // Stop event propagation
+                if (appState.toolSettings.text.size > 0) {
+                    appState.toolSettings.text.size -= 1;
+                    textSizeValue.textContent = appState.toolSettings.text.size;
+                }
+                return false; // Prevent any default behavior
+            });
+            
+            // Line options
+            const lineOptions = document.querySelectorAll('.option-button[data-line-type]');
+            lineOptions.forEach(option => {
+                option.addEventListener('click', function() {
+                    const type = this.getAttribute('data-line-type');
+                    appState.toolSettings.line.type = type;
+                    
+                    // Update selected state in UI
+                    lineOptions.forEach(opt => opt.classList.remove('selected'));
+                    this.classList.add('selected');
+                    
+                    // Update line tool indicator
+                    updateLineToolIndicator();
+                    
+                    // Hide panel after selection
+                    if (activePanel) {
+                        activePanel.style.display = 'none';
+                        activePanel = null;
+                    }
+                });
+            });
+            
+            function updateLineToolIndicator() {
+                const lineButton = document.querySelector('.tool-button[data-tool="line"]');
+                if (appState.toolSettings.line.type !== 'solid') {
+                    lineButton.classList.add('sub-tool-selected');
+                } else {
+                    lineButton.classList.remove('sub-tool-selected');
+                }
+            }
+            
+            // Shape options
+            const shapeOptions = document.querySelectorAll('.option-button[data-shape]');
+            shapeOptions.forEach(option => {
+                option.addEventListener('click', function() {
+                    const shape = this.getAttribute('data-shape');
+                    appState.toolSettings.shape.type = shape;
+                    
+                    // Update selected state in UI
+                    shapeOptions.forEach(opt => opt.classList.remove('selected'));
+                    this.classList.add('selected');
+                    
+                    // Update shape tool indicator
+                    updateShapeToolIndicator();
+                    
+                    // Hide panel after selection
+                    if (activePanel) {
+                        activePanel.style.display = 'none';
+                        activePanel = null;
+                    }
+                });
+            });
+            
+            function updateShapeToolIndicator() {
+                const shapeButton = document.querySelector('.tool-button[data-tool="shape"]');
+                if (appState.toolSettings.shape.type !== 'rectangle') {
+                    shapeButton.classList.add('sub-tool-selected');
+                } else {
+                    shapeButton.classList.remove('sub-tool-selected');
+                }
+            }
+            
+            // Shapes modal
+            const moreShapesButton = document.getElementById('moreShapesButton');
+            const shapesModalOverlay = document.getElementById('shapesModalOverlay');
+            const closeShapesModal = document.getElementById('closeShapesModal');
+            const shapeItems = document.querySelectorAll('.shape-item');
+            
+            moreShapesButton.addEventListener('click', function() {
+                // Show shapes modal
+                shapesModalOverlay.style.display = 'flex';
+                
+                // Highlight currently selected shape
+                shapeItems.forEach(item => {
+                    if (item.getAttribute('data-shape') === appState.toolSettings.shape.type) {
+                        item.classList.add('selected');
+                    } else {
+                        item.classList.remove('selected');
+                    }
+                });
+                
+                // Hide shape panel
+                if (activePanel) {
+                    activePanel.style.display = 'none';
+                    activePanel = null;
+                }
+            });
+            
+            closeShapesModal.addEventListener('click', function() {
+                shapesModalOverlay.style.display = 'none';
+            });
+            
+            // Close modal when clicking outside
+            shapesModalOverlay.addEventListener('click', function(e) {
+                if (e.target === shapesModalOverlay) {
+                    shapesModalOverlay.style.display = 'none';
+                }
+            });
+            
+            // Shape selection in modal
+            shapeItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    const shape = this.getAttribute('data-shape');
+                    appState.toolSettings.shape.type = shape;
+                    
+                    // Update selected state in UI
+                    shapeItems.forEach(i => i.classList.remove('selected'));
+                    this.classList.add('selected');
+                    
+                    // Update shape tool indicator
+                    updateShapeToolIndicator();
+                    
+                    // Close modal
+                    shapesModalOverlay.style.display = 'none';
+                });
+            });
+            
+            // Eraser options
+            const eraserOptions = document.querySelectorAll('.eraser-option');
+            eraserOptions.forEach(option => {
+                option.addEventListener('click', function() {
+                    const type = this.getAttribute('data-eraser-type');
+                    appState.toolSettings.eraser.type = type;
+                    
+                    // Update selected state in UI
+                    eraserOptions.forEach(opt => opt.classList.remove('selected'));
+                    this.classList.add('selected');
+                    
+                    // Update eraser tool icon instead of dashed border
+                    updateEraserToolIcon();
+                    
+                    // Hide panel after selection
+                    if (activePanel) {
+                        activePanel.style.display = 'none';
+                        activePanel = null;
+                    }
+                });
+            });
+            
+            function updateEraserToolIcon() {
+                const eraserButton = document.getElementById('eraserToolButton');
+                const eraserIcon = eraserButton.querySelector('i');
+                
+                if (appState.toolSettings.eraser.type === 'partial') {
+                    eraserIcon.className = 'ri-eraser-line dashed-icon';
+                } else {
+                    eraserIcon.className = 'ri-eraser-line';
+                }
+            }
+            
+            // Color options
+            const colorOptions = document.querySelectorAll('.color-option');
+            const customColorPicker = document.getElementById('customColorPicker');
+            const currentColorBox = document.getElementById('currentColorBox');
+            const colorIndicator = document.getElementById('colorIndicator');
+            
+            colorOptions.forEach(option => {
+                option.addEventListener('click', function() {
+                    const color = this.getAttribute('data-color');
+                    setCurrentColor(color);
+                    
+                    // Update selected state
+                    colorOptions.forEach(opt => opt.classList.remove('selected'));
+                    this.classList.add('selected');
+                    
+                    // Hide panel after selection
+                    if (activePanel) {
+                        activePanel.style.display = 'none';
+                        activePanel = null;
+                    }
+                });
+            });
+            
+            customColorPicker.addEventListener('input', function() {
+                setCurrentColor(this.value);
+                
+                // Remove selected state from preset colors
+                colorOptions.forEach(opt => opt.classList.remove('selected'));
+            });
+            
+            function setCurrentColor(color) {
+                appState.toolSettings.color = color;
+                currentColorBox.style.backgroundColor = color;
+                colorIndicator.style.backgroundColor = color;
+            }
+            
+            // Close panels when clicking outside
+            document.addEventListener('click', function(event) {
+                if (activePanel && !event.target.closest('.tool-panel') && !event.target.closest('.tool-button')) {
+                    activePanel.style.display = 'none';
+                    activePanel = null;
+                }
+            });
+            
+            // Toolbar dragging functionality
+            const toolbar = document.getElementById('toolbar');
+            let isDragging = false;
+            let offsetX, offsetY;
+            const SNAP_THRESHOLD = 20;
+            
+            // NewFile button
+            const newFileBtn = document.querySelector('[data-i18n="newFile"]');
+            if (newFileBtn) {
+                newFileBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    if (confirm('Are you sure you want to create a new file? Unsaved changes will be lost.')) {
+                        location.reload();
+                    }
+                });
+            }
+            
+            // Rotate button
+            const rotateButton = toolbar.querySelector('.toolbar-rotate-button');
+            let isVertical = true;
+            
+            rotateButton.addEventListener('click', function(e) {
+                e.stopPropagation();
+                isVertical = !isVertical;
+                toolbar.classList.toggle('vertical');
+                toolbar.classList.toggle('horizontal');
+                
+                // Recalculate position
+                const rect = toolbar.getBoundingClientRect();
+                const containerRect = document.querySelector('.flex-1').getBoundingClientRect();
+                
+                let newLeft = parseInt(toolbar.style.left) || rect.left - containerRect.left;
+                let newTop = parseInt(toolbar.style.top) || rect.top - containerRect.top;
+                const maxX = containerRect.width - rect.width;
+                const maxY = containerRect.height - rect.height;
+                
+                newLeft = Math.min(Math.max(0, newLeft), maxX);
+                newTop = Math.min(Math.max(0, newTop), maxY);
+                
+                toolbar.style.left = newLeft + 'px';
+                toolbar.style.top = newTop + 'px';
+                
+                // Reposition any open panel
+                if (activePanel && appState.activeTool) {
+                    const button = document.querySelector(`.tool-button[data-tool="${appState.activeTool}"]`);
+                    if (button) {
+                        positionPanel(button, activePanel);
+                    }
+                }
+            });
+            
+            function snapToEdge(value, min, max, threshold) {
+                if (value < threshold) return min;
+                if (value > max - threshold) return max;
+                return value;
+            }
+            
+            toolbar.addEventListener('mousedown', function(e) {
+                if (e.target === toolbar || (toolbar.contains(e.target) && e.target !== rotateButton && !e.target.closest('.tool-button'))) {
+                    isDragging = true;
+                    toolbar.classList.add('dragging');
+                    const rect = toolbar.getBoundingClientRect();
+                    offsetX = e.clientX - rect.left;
+                    offsetY = e.clientY - rect.top;
+                }
+            });
+            
+            document.addEventListener('mousemove', function(e) {
+                if (isDragging) {
+                    const containerRect = document.querySelector('.flex-1').getBoundingClientRect();
+                    const toolbarRect = toolbar.getBoundingClientRect();
+                    let newX = e.clientX - offsetX;
+                    let newY = e.clientY - offsetY;
+                    
+                    // Check boundaries
+                    const maxX = containerRect.width - toolbarRect.width;
+                    const maxY = containerRect.height - toolbarRect.height;
+                    
+                    // Snap to edges
+                    newX = snapToEdge(newX, 0, maxX, SNAP_THRESHOLD);
+                    newY = snapToEdge(newY, 0, maxY, SNAP_THRESHOLD);
+                    
+                    toolbar.style.left = newX + 'px';
+                    toolbar.style.top = newY + 'px';
+                    
+                    // Determine closest edge
+                    const isNearLeft = newX < SNAP_THRESHOLD;
+                    const isNearRight = newX > maxX - SNAP_THRESHOLD;
+                    const isNearTop = newY < SNAP_THRESHOLD;
+                    const isNearBottom = newY > maxY - SNAP_THRESHOLD;
+                    
+                    // Remove docking classes
+                    toolbar.classList.remove('docked-left', 'docked-right', 'docked-top', 'docked-bottom');
+                    
+                    // Add docking class
+                    if (isNearLeft) {
+                        toolbar.classList.add('docked-left');
+                    } else if (isNearRight) {
+                        toolbar.classList.add('docked-right');
+                    } else if (isNearTop) {
+                        toolbar.classList.add('docked-top');
+                    } else if (isNearBottom) {
+                        toolbar.classList.add('docked-bottom');
+                    }
+                    
+                    // Auto-rotate based on docking
+                    if ((isNearLeft || isNearRight) && !isVertical) {
+                        isVertical = true;
+                        toolbar.classList.add('vertical');
+                        toolbar.classList.remove('horizontal');
+                    } else if ((isNearTop || isNearBottom) && isVertical) {
+                        isVertical = false;
+                        toolbar.classList.remove('vertical');
+                        toolbar.classList.add('horizontal');
+                    }
+                    
+                    // Visual effect
+                    if (newX === 0 || newX === maxX || newY === 0 || newY === maxY) {
+                        toolbar.style.transition = 'transform 0.1s';
+                        toolbar.style.transform = 'scale(1.02)';
+                    } else {
+                        toolbar.style.transition = 'none';
+                        toolbar.style.transform = 'scale(1)';
+                    }
+                    
+                    // Reposition any open panel
+                    if (activePanel && appState.activeTool) {
+                        const button = document.querySelector(`.tool-button[data-tool="${appState.activeTool}"]`);
+                        if (button) {
+                            positionPanel(button, activePanel);
+                        }
+                    }
+                }
+            });
+            
+            document.addEventListener('mouseup', function() {
+                if (isDragging) {
+                    isDragging = false;
+                    toolbar.classList.remove('dragging');
+                    toolbar.style.transition = 'transform 0.2s';
+                    toolbar.style.transform = 'scale(1)';
+                    setTimeout(() => {
+                        toolbar.style.transition = 'none';
+                    }, 200);
+                }
+            });
+            
+            // Zoom functionality
+            const zoomIn = document.getElementById('zoomIn');
+            const zoomOut = document.getElementById('zoomOut');
+            const zoomText = document.getElementById('zoomText');
+            
+            zoomIn.addEventListener('click', function(e) {
+                e.preventDefault(); // Prevent default behavior
+                e.stopPropagation(); // Stop event propagation
+                appState.zoom += 10;
+                updateZoom();
+                return false; // Prevent any default behavior
+            });
+            
+            zoomOut.addEventListener('click', function(e) {
+                e.preventDefault(); // Prevent default behavior
+                e.stopPropagation(); // Stop event propagation
+                if (appState.zoom > 10) {
+                    appState.zoom -= 10;
+                    updateZoom();
+                }
+                return false; // Prevent any default behavior
+            });
+            
+            function updateZoom() {
+                zoomText.textContent = appState.zoom + '%';
+                // Here you would add logic to scale the canvas
+            }
+            
+            // Hide/Show toolbar functionality
+            const hideToolbarButton = document.getElementById('hideToolbarButton');
+            const showToolbarButton = document.getElementById('showToolbarButton');
+            
+            hideToolbarButton.addEventListener('click', function() {
+                toolbar.style.display = 'none';
+                showToolbarButton.style.display = 'flex';
+                mainMenu.style.display = 'none';
+            });
+            
+            showToolbarButton.addEventListener('click', function() {
+                toolbar.style.display = 'flex';
+                showToolbarButton.style.display = 'none';
+            });
+            
+            // Settings panel functionality
+            const settingsPanel = document.getElementById('settingsPanel');
+            const openSettingsButton = document.getElementById('openSettingsButton');
+            const closeSettingsButton = document.getElementById('closeSettingsButton');
+            const cancelSettingsButton = document.getElementById('cancelSettingsButton');
+            const saveSettingsButton = document.getElementById('saveSettingsButton');
+            const languageOptions = document.querySelectorAll('.language-option');
+            
+            // Open settings panel
+            openSettingsButton.addEventListener('click', function() {
+                settingsPanel.style.display = 'block';
+                mainMenu.style.display = 'none';
+                
+                // Update language selection UI
+                languageOptions.forEach(option => {
+                    if (option.getAttribute('data-lang') === currentLang) {
+                        option.classList.add('selected');
+                    } else {
+                        option.classList.remove('selected');
+                    }
+                });
+            });
+            
+            // Close settings panel
+            function closeSettingsPanel() {
+                settingsPanel.style.display = 'none';
+            }
+            
+            closeSettingsButton.addEventListener('click', closeSettingsPanel);
+            cancelSettingsButton.addEventListener('click', closeSettingsPanel);
+            
+            // Language selection
+            languageOptions.forEach(option => {
+                option.addEventListener('click', function() {
+                    const lang = this.getAttribute('data-lang');
+                    
+                    // Update selected state in UI
+                    languageOptions.forEach(opt => {
+                        opt.classList.remove('selected');
+                        delete opt.dataset.selected;
+                    });
+                    this.classList.add('selected');
+                    
+                    // Store selected language temporarily
+                    this.dataset.selected = 'true';
+                });
+            });
+            
+            // Save settings
+            saveSettingsButton.addEventListener('click', function() {
+                const selectedLang = document.querySelector('.language-option[data-selected="true"]');
+                if (selectedLang) {
+                    currentLang = selectedLang.getAttribute('data-lang');
+                    applyTranslations();
+                }
+                
+                closeSettingsPanel();
+            });
+            
+            // Initialize the application
+            function initializeApp() {
+                // Set default tool
+                setActiveTool('text');
+                
+                // Set initial states for options
+                document.querySelector('.option-button[data-line-type="solid"]').classList.add('selected');
+                document.querySelector('.option-button[data-shape="rectangle"]').classList.add('selected');
+                document.querySelector('.eraser-option[data-eraser-type="full"]').classList.add('selected');
+                
+                // Initialize text options
+                document.getElementById('boldOption').checked = appState.toolSettings.text.bold;
+                document.getElementById('italicOption').checked = appState.toolSettings.text.italic;
+                document.getElementById('underlineOption').checked = appState.toolSettings.text.underline;
+                textSizeValue.textContent = appState.toolSettings.text.size;
+                
+                // Set initial color
+                setCurrentColor('#000000');
+                
+                // Update zoom display
+                updateZoom();
+                
+                // Apply initial translations
+                applyTranslations();
+            }
+            
+            // Start the application
+            initializeApp();
+        });
+    </script>
+    <script src="drawing/drawing.js"></script>
+    <script src="drawing/file-io.js"></script>
+</body>
+</html>

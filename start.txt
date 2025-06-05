@@ -1,0 +1,1 @@
+docker run --name Tinypad -d -p 9054:9054 nosignificantworries/tinypad:v0.0-alpha
