@@ -87,6 +87,9 @@ document.addEventListener('DOMContentLoaded', function() {
     let startX = 0, startY = 0;
     let currentShape = null;
     const objects = [];
+    window.appState = window.appState || {};
+    window.appState.objects = objects;
+    window.redraw = redraw;
 
     function getCurrentColor() {
         return window.appState?.toolSettings?.color || '#000000';

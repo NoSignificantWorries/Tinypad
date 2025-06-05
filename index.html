@@ -936,6 +936,17 @@
             let offsetX, offsetY;
             const SNAP_THRESHOLD = 20;
             
+            // NewFile button
+            const newFileBtn = document.querySelector('[data-i18n="newFile"]');
+            if (newFileBtn) {
+                newFileBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    if (confirm('Are you sure you want to create a new file? Unsaved changes will be lost.')) {
+                        location.reload();
+                    }
+                });
+            }
+            
             // Rotate button
             const rotateButton = toolbar.querySelector('.toolbar-rotate-button');
             let isVertical = true;
@@ -1199,5 +1210,6 @@
         });
     </script>
     <script src="drawing/drawing.js"></script>
+    <script src="drawing/file-io.js"></script>
 </body>
 </html>
