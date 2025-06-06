@@ -1,0 +1,512 @@
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Графический блокнот</title>
+<script src="https://cdn.tailwindcss.com/3.4.16"></script>
+<script>tailwind.config={theme:{extend:{colors:{primary:'#4f46e5',secondary:'#6366f1'},borderRadius:{'none':'0px','sm':'4px',DEFAULT:'8px','md':'12px','lg':'16px','xl':'20px','2xl':'24px','3xl':'32px','full':'9999px','button':'8px'}}}}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css" rel="stylesheet">
+<style>
+:where([class^="ri-"])::before { content: "\f3c2"; }
+body {
+font-family: 'Inter', sans-serif;
+background-color: #f9fafb;
+height: 100vh;
+overflow: hidden;
+}
+.tool-submenu {
+position: absolute;
+background: white;
+border: 1px solid #e5e7eb;
+border-radius: 8px;
+padding: 4px;
+display: none;
+box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+z-index: 100;
+}
+.tool-submenu.show {
+display: block;
+}
+.tool-submenu button {
+width: 40px;
+height: 40px;
+}
+.dashed-icon {
+border: 2px dashed currentColor;
+border-radius: 4px;
+padding: 2px;
+}
+.menu-container {
+position: relative;
+}
+.menu {
+position: absolute;
+top: 100%;
+left: 0;
+margin-top: 0.5rem;
+display: none;
+z-index: 50;
+}
+.submenu {
+position: absolute;
+left: 100%;
+top: 0;
+display: none;
+z-index: 50;
+}
+.menu-item:hover > .submenu {
+display: block;
+}
+.toolbar {
+transition: all 0.3s ease;
+user-select: none;
+cursor: move;
+border-radius: 12px;
+}
+.toolbar.dragging {
+opacity: 0.7;
+cursor: grabbing;
+box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+.toolbar.horizontal {
+flex-direction: row;
+height: 48px;
+width: auto;
+}
+.toolbar.horizontal .toolbar-zoom {
+flex-direction: row;
+gap: 8px;
+align-items: center;
+}
+.toolbar.horizontal .toolbar-zoom button {
+width: 32px;
+height: 32px;
+}
+.toolbar.vertical {
+flex-direction: column;
+width: 48px;
+height: auto;
+}
+.toolbar.horizontal .border-b {
+border-bottom: none;
+border-right: 1px solid #e5e7eb;
+}
+.toolbar.docked-left {
+border-radius: 0 12px 12px 0;
+left: 0 !important;
+}
+.toolbar.docked-right {
+border-radius: 12px 0 0 12px;
+right: 0 !important;
+left: auto !important;
+}
+.toolbar.docked-top {
+border-radius: 0 0 12px 12px;
+top: 0 !important;
+}
+.toolbar.docked-bottom {
+border-radius: 12px 12px 0 0;
+bottom: 0 !important;
+top: auto !important;
+}
+.tool-button.active {
+background-color: rgba(79, 70, 229, 0.1);
+color: #4f46e5;
+}
+.canvas-area {
+background-color: white;
+background-image:
+linear-gradient(rgba(0,0,0,0.05) 1px, transparent 1px),
+linear-gradient(90deg, rgba(0,0,0,0.05) 1px, transparent 1px);
+background-size: 20px 20px;
+}
+.toolbar-rotate-button {
+position: absolute;
+width: 16px;
+height: 16px;
+background: white;
+border: 1px solid #e5e7eb;
+border-radius: 50%;
+display: flex;
+align-items: center;
+justify-content: center;
+cursor: pointer;
+z-index: 60;
+}
+.toolbar.vertical .toolbar-rotate-button {
+right: -8px;
+top: -8px;
+}
+.toolbar.horizontal .toolbar-rotate-button {
+right: -8px;
+top: -8px;
+}
+</style>
+</head>
+<body class="bg-white">
+<div class="flex flex-col h-screen">
+<div class="absolute left-4 top-4 z-50">
+<div class="menu-container">
+<button id="menuButton" class="bg-white shadow-md hover:bg-gray-50 p-2 rounded-lg !rounded-button whitespace-nowrap">
+<div class="w-6 h-6 flex flex-col gap-1.5 items-center justify-center">
+<div class="w-4 h-0.5 bg-gray-600 rounded-full"></div>
+<div class="w-4 h-0.5 bg-gray-600 rounded-full"></div>
+<div class="w-4 h-0.5 bg-gray-600 rounded-full"></div>
+</div>
+</button>
+<div id="mainMenu" class="menu bg-white shadow-lg rounded-lg border border-gray-200 w-48">
+<div class="py-1">
+<div class="menu-item">
+<div class="px-4 py-2 text-gray-700 hover:bg-gray-100 flex justify-between items-center cursor-pointer">
+<span>Файл</span>
+<div class="w-4 h-4 flex items-center justify-center">
+<i class="ri-arrow-right-s-line"></i>
+</div>
+</div>
+<div class="submenu bg-white shadow-lg rounded-lg border border-gray-200 w-48">
+<div class="py-1">
+<div class="px-4 py-2 text-gray-700 hover:bg-gray-100 cursor-pointer">Новый файл</div>
+<div class="px-4 py-2 text-gray-700 hover:bg-gray-100 cursor-pointer">Открыть файл</div>
+<div class="px-4 py-2 text-gray-700 hover:bg-gray-100 cursor-pointer">Сохранить</div>
+<div class="px-4 py-2 text-gray-700 hover:bg-gray-100 cursor-pointer">Сохранить как</div>
+</div>
+</div>
+</div>
+<div class="menu-item">
+<div class="px-4 py-2 text-gray-700 hover:bg-gray-100 flex justify-between items-center cursor-pointer">
+<span>Правка</span>
+<div class="w-4 h-4 flex items-center justify-center">
+<i class="ri-arrow-right-s-line"></i>
+</div>
+</div>
+<div class="submenu bg-white shadow-lg rounded-lg border border-gray-200 w-48">
+<div class="py-1">
+<div class="px-4 py-2 text-gray-700 hover:bg-gray-100 cursor-pointer">Повторить</div>
+<div class="px-4 py-2 text-gray-700 hover:bg-gray-100 cursor-pointer">Отменить</div>
+<div class="px-4 py-2 text-gray-700 hover:bg-gray-100 cursor-pointer">Копировать</div>
+<div class="px-4 py-2 text-gray-700 hover:bg-gray-100 cursor-pointer">Вырезать</div>
+<div class="px-4 py-2 text-gray-700 hover:bg-gray-100 cursor-pointer">Вставить</div>
+</div>
+</div>
+</div>
+<div class="px-4 py-2 text-gray-700 hover:bg-gray-100 cursor-pointer">Настройки</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Основная область -->
+<div class="flex-1 relative overflow-hidden">
+<!-- Панель инструментов -->
+<div id="toolbar" class="toolbar vertical absolute left-4 top-1/2 -translate-y-1/2 bg-white border border-gray-200 rounded-xl shadow-md flex">
+<div class="toolbar-rotate-button">
+<i class="ri-refresh-line text-xs"></i>
+</div>
+<div class="p-1 border-b border-gray-200">
+<button class="tool-button w-10 h-10 rounded flex items-center justify-center hover:bg-gray-50 active:bg-gray-100" data-tool="text">
+<div class="w-6 h-6 flex items-center justify-center font-bold text-lg">
+T
+</div>
+</button>
+</div>
+<div class="p-1 border-b border-gray-200 relative">
+<button class="tool-button w-10 h-10 rounded flex items-center justify-center hover:bg-gray-50 active:bg-gray-100" data-tool="line">
+<div class="w-6 h-6 flex items-center justify-center">
+<i class="ri-pencil-line"></i>
+</div>
+</button>
+<div class="tool-submenu" data-for="line">
+<button class="rounded flex items-center justify-center hover:bg-gray-50 active:bg-gray-100">
+<div class="w-6 h-6 flex items-center justify-center">
+<i class="ri-pencil-line dashed-icon"></i>
+</div>
+</button>
+</div>
+</div>
+<div class="p-1 border-b border-gray-200 relative">
+<button class="tool-button w-10 h-10 rounded flex items-center justify-center hover:bg-gray-50 active:bg-gray-100" data-tool="shape">
+<div class="w-6 h-6 flex items-center justify-center">
+<i class="ri-shapes-line"></i>
+</div>
+</button>
+<div class="tool-submenu" data-for="shape">
+<button class="rounded flex items-center justify-center hover:bg-gray-50 active:bg-gray-100">
+<div class="w-6 h-6 flex items-center justify-center">
+<i class="ri-shapes-line dashed-icon"></i>
+</div>
+</button>
+</div>
+</div>
+<div class="p-1 border-b border-gray-200">
+<button class="tool-button w-10 h-10 rounded flex items-center justify-center hover:bg-gray-50 active:bg-gray-100" data-tool="eraser">
+<div class="w-6 h-6 flex items-center justify-center">
+<i class="ri-eraser-line"></i>
+</div>
+</button>
+</div>
+<div class="p-1 flex flex-col items-center toolbar-zoom">
+<button class="w-10 h-8 rounded flex items-center justify-center hover:bg-gray-50 active:bg-gray-100" id="zoomOut">
+<div class="w-5 h-5 flex items-center justify-center">
+<i class="ri-subtract-line"></i>
+</div>
+</button>
+<div class="text-xs text-gray-600 my-1">100%</div>
+<button class="w-10 h-8 rounded flex items-center justify-center hover:bg-gray-50 active:bg-gray-100" id="zoomIn">
+<div class="w-5 h-5 flex items-center justify-center">
+<i class="ri-add-line"></i>
+</div>
+</button>
+</div>
+</div>
+<!-- Область холста -->
+<div class="canvas-area w-full h-full"></div>
+</div>
+</div>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+// Обработка меню
+const menuButton = document.getElementById('menuButton');
+const mainMenu = document.getElementById('mainMenu');
+menuButton.addEventListener('click', function() {
+if (mainMenu.style.display === 'block') {
+mainMenu.style.display = 'none';
+} else {
+mainMenu.style.display = 'block';
+}
+});
+// Закрытие меню при клике вне его
+document.addEventListener('click', function(event) {
+if (!menuButton.contains(event.target) && !mainMenu.contains(event.target)) {
+mainMenu.style.display = 'none';
+}
+});
+});
+document.addEventListener('DOMContentLoaded', function() {
+// Обработка инструментов
+const toolButtons = document.querySelectorAll('.tool-button');
+let pressTimer;
+let activeSubmenu = null;
+function showSubmenu(button) {
+const tool = button.getAttribute('data-tool');
+const submenu = button.parentElement.querySelector('.tool-submenu');
+if (!submenu) return;
+const buttonRect = button.getBoundingClientRect();
+const toolbar = document.getElementById('toolbar');
+const isVertical = toolbar.classList.contains('vertical');
+const isDockedRight = toolbar.classList.contains('docked-right');
+if (isVertical) {
+submenu.style.top = '0';
+if (isDockedRight) {
+submenu.style.right = '100%';
+submenu.style.left = 'auto';
+} else {
+submenu.style.left = '100%';
+submenu.style.right = 'auto';
+}
+} else {
+submenu.style.left = '0';
+submenu.style.top = '100%';
+}
+if (activeSubmenu) {
+activeSubmenu.classList.remove('show');
+}
+submenu.classList.add('show');
+activeSubmenu = submenu;
+}
+toolButtons.forEach(button => {
+button.addEventListener('mousedown', function() {
+const tool = this.getAttribute('data-tool');
+if (tool === 'text') return; // Текст не имеет подпунктов
+pressTimer = setTimeout(() => {
+showSubmenu(this);
+}, 500);
+});
+button.addEventListener('mouseup', function() {
+clearTimeout(pressTimer);
+});
+button.addEventListener('mouseleave', function() {
+clearTimeout(pressTimer);
+});
+button.addEventListener('click', function() {
+// Если кнопка уже активна, не делаем ничего
+if (this.classList.contains('active')) return;
+
+// Удаляем активный класс со всех кнопок
+toolButtons.forEach(btn => btn.classList.remove('active'));
+
+// Закрываем все открытые подменю
+const allSubmenus = document.querySelectorAll('.tool-submenu');
+allSubmenus.forEach(submenu => submenu.classList.remove('show'));
+activeSubmenu = null;
+
+// Добавляем активный класс только на выбранную кнопку
+this.classList.add('active');
+});
+});
+// Обработка выбора подинструмента
+document.querySelectorAll('.tool-submenu button').forEach(subButton => {
+subButton.addEventListener('click', function() {
+const mainButton = this.closest('.relative').querySelector('.tool-button');
+const mainIcon = mainButton.querySelector('i');
+const subIcon = this.querySelector('i');
+
+// Если основная кнопка не активна, активируем ее
+if (!mainButton.classList.contains('active')) {
+toolButtons.forEach(btn => btn.classList.remove('active'));
+mainButton.classList.add('active');
+}
+
+// Копируем класс иконки из подпункта в основную кнопку
+const isDashed = subIcon.classList.contains('dashed-icon');
+if(isDashed) {
+mainIcon.className = subIcon.className;
+} else {
+mainIcon.className = mainIcon.className.split(' ')[0];
+}
+
+// Закрываем подменю
+if (activeSubmenu) {
+activeSubmenu.classList.remove('show');
+activeSubmenu = null;
+}
+});
+});
+// Закрытие подменю при клике вне
+document.addEventListener('click', function(event) {
+if (activeSubmenu && !event.target.closest('.tool-submenu') && !event.target.closest('.tool-button')) {
+activeSubmenu.classList.remove('show');
+activeSubmenu = null;
+}
+});
+});
+document.addEventListener('DOMContentLoaded', function() {
+// Перетаскивание панели инструментов
+const toolbar = document.getElementById('toolbar');
+let isDragging = false;
+let offsetX, offsetY;
+const SNAP_THRESHOLD = 20; // Расстояние для прикрепления в пикселях
+// Добавляем кнопку поворота
+const rotateButton = toolbar.querySelector('.toolbar-rotate-button');
+let isVertical = true;
+rotateButton.addEventListener('click', function(e) {
+e.stopPropagation();
+isVertical = !isVertical;
+toolbar.classList.toggle('vertical');
+toolbar.classList.toggle('horizontal');
+// Пересчитываем позицию тулбара при повороте
+const rect = toolbar.getBoundingClientRect();
+const containerRect = document.querySelector('.flex-1').getBoundingClientRect();
+// Проверяем, не выходит ли тулбар за пределы контейнера после поворота
+let newLeft = parseInt(toolbar.style.left) || rect.left - containerRect.left;
+let newTop = parseInt(toolbar.style.top) || rect.top - containerRect.top;
+const maxX = containerRect.width - rect.width;
+const maxY = containerRect.height - rect.height;
+newLeft = Math.min(Math.max(0, newLeft), maxX);
+newTop = Math.min(Math.max(0, newTop), maxY);
+toolbar.style.left = newLeft + 'px';
+toolbar.style.top = newTop + 'px';
+});
+function snapToEdge(value, min, max, threshold) {
+if (value < threshold) return min;
+if (value > max - threshold) return max;
+return value;
+}
+toolbar.addEventListener('mousedown', function(e) {
+if (e.target === toolbar || (toolbar.contains(e.target) && e.target !== rotateButton)) {
+isDragging = true;
+toolbar.classList.add('dragging');
+const rect = toolbar.getBoundingClientRect();
+offsetX = e.clientX - rect.left;
+offsetY = e.clientY - rect.top;
+}
+});
+document.addEventListener('mousemove', function(e) {
+if (isDragging) {
+const containerRect = document.querySelector('.flex-1').getBoundingClientRect();
+const toolbarRect = toolbar.getBoundingClientRect();
+let newX = e.clientX - offsetX;
+let newY = e.clientY - offsetY;
+// Проверяем границы контейнера
+const maxX = containerRect.width - toolbarRect.width;
+const maxY = containerRect.height - toolbarRect.height;
+// Применяем прикрепление к границам
+newX = snapToEdge(newX, 0, maxX, SNAP_THRESHOLD);
+newY = snapToEdge(newY, 0, maxY, SNAP_THRESHOLD);
+toolbar.style.left = newX + 'px';
+toolbar.style.top = newY + 'px';
+// Определяем к какой стороне ближе тулбар
+const isNearLeft = newX < SNAP_THRESHOLD;
+const isNearRight = newX > maxX - SNAP_THRESHOLD;
+const isNearTop = newY < SNAP_THRESHOLD;
+const isNearBottom = newY > maxY - SNAP_THRESHOLD;
+// Удаляем все классы прикрепления
+toolbar.classList.remove('docked-left', 'docked-right', 'docked-top', 'docked-bottom');
+// Добавляем соответствующий класс прикрепления
+if (isNearLeft) {
+toolbar.classList.add('docked-left');
+} else if (isNearRight) {
+toolbar.classList.add('docked-right');
+} else if (isNearTop) {
+toolbar.classList.add('docked-top');
+} else if (isNearBottom) {
+toolbar.classList.add('docked-bottom');
+}
+// Автоматически поворачиваем тулбар в зависимости от положения
+if ((isNearLeft || isNearRight) && !isVertical) {
+isVertical = true;
+toolbar.classList.add('vertical');
+toolbar.classList.remove('horizontal');
+} else if ((isNearTop || isNearBottom) && isVertical) {
+isVertical = false;
+toolbar.classList.remove('vertical');
+toolbar.classList.add('horizontal');
+}
+// Добавляем визуальный эффект при приближении к границам
+if (newX === 0 || newX === maxX || newY === 0 || newY === maxY) {
+toolbar.style.transition = 'transform 0.1s';
+toolbar.style.transform = 'scale(1.02)';
+} else {
+toolbar.style.transition = 'none';
+toolbar.style.transform = 'scale(1)';
+}
+}
+});
+document.addEventListener('mouseup', function() {
+if (isDragging) {
+isDragging = false;
+toolbar.classList.remove('dragging');
+toolbar.style.transition = 'transform 0.2s';
+toolbar.style.transform = 'scale(1)';
+// Сброс перехода после анимации
+setTimeout(() => {
+toolbar.style.transition = 'none';
+}, 200);
+}
+});
+// Масштабирование
+const zoomIn = document.getElementById('zoomIn');
+const zoomOut = document.getElementById('zoomOut');
+const zoomText = document.querySelector('.text-xs.text-gray-600');
+let zoomLevel = 100;
+zoomIn.addEventListener('click', function() {
+zoomLevel += 10;
+updateZoom();
+});
+zoomOut.addEventListener('click', function() {
+if (zoomLevel > 10) {
+zoomLevel -= 10;
+updateZoom();
+}
+});
+function updateZoom() {
+zoomText.textContent = zoomLevel + '%';
+// Здесь можно добавить логику масштабирования холста
+}
+});
+</script>
+</body>
+</html>
