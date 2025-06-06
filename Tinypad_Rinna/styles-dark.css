@@ -1,0 +1,721 @@
+:where([class^="ri-"])::before { content: "\f3c2"; }
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: #121212;
+    color: #000000;
+    height: 100vh;
+    overflow: hidden;
+}
+
+/* Основные элементы интерфейса */
+.tool-submenu {
+    position: absolute;
+    background: #1e1e1e;
+    border: 1px solid #333;
+    border-radius: 12px;
+    padding: 6px;
+    display: none;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    z-index: 100;
+}
+.tool-submenu.show {
+    display: block;
+}
+.tool-submenu button {
+    width: 40px;
+    height: 40px;
+}
+.dashed-icon {
+    border: 2px dashed currentColor;
+    border-radius: 6px;
+    padding: 2px;
+}
+.dotted-icon {
+    border: 2px dotted currentColor;
+    border-radius: 6px;
+    padding: 2px;
+}
+
+/* Меню */
+.menu-container {
+    position: relative;
+}
+.menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    margin-top: 0.5rem;
+    display: none;
+    z-index: 50;
+    background: #1e1e1e;
+    border: 1px solid #333;
+    border-radius: 12px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+}
+.submenu {
+    position: absolute;
+    left: 100%;
+    top: 0;
+    display: none;
+    z-index: 50;
+    background: #1e1e1e;
+    border: 1px solid #333;
+    border-radius: 12px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+}
+.menu-item:hover > .submenu {
+    display: block;
+}
+
+/* Кнопка меню */
+#menuButton {
+    background: #1e1e1e;
+    box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.5), 
+                -5px -5px 15px rgba(60, 60, 60, 0.1);
+    transition: all 0.3s ease;
+}
+#menuButton:hover {
+    background: #252525;
+    box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.5), 
+                -3px -3px 10px rgba(60, 60, 60, 0.1);
+}
+#menuButton .bg-gray-600 {
+    background-color: #a0a0a0;
+}
+
+/* Панель инструментов */
+.toolbar {
+    transition: all 0.3s ease;
+    user-select: none;
+    cursor: move;
+    border-radius: 16px;
+    background: #1e1e1e;
+    border: 1px solid #333;
+    box-shadow: 8px 8px 20px rgba(0, 0, 0, 0.5), 
+                -8px -8px 20px rgba(60, 60, 60, 0.1);
+}
+.toolbar.dragging {
+    opacity: 0.8;
+    cursor: grabbing;
+    box-shadow: 12px 12px 30px rgba(0, 0, 0, 0.6);
+}
+.toolbar.horizontal {
+    flex-direction: row;
+    height: 56px;
+    width: auto;
+}
+.toolbar.horizontal .toolbar-zoom {
+    flex-direction: row;
+    gap: 8px;
+    align-items: center;
+}
+.toolbar.vertical {
+    flex-direction: column;
+    width: 56px;
+    height: auto;
+}
+.toolbar.horizontal .border-b {
+    border-bottom: none;
+    border-right: 1px solid #333;
+}
+.toolbar.docked-left {
+    border-radius: 0 16px 16px 0;
+    left: 0 !important;
+}
+.toolbar.docked-right {
+    border-radius: 16px 0 0 16px;
+    right: 0 !important;
+    left: auto !important;
+}
+.toolbar.docked-top {
+    border-radius: 0 0 16px 16px;
+    top: 0 !important;
+}
+.toolbar.docked-bottom {
+    border-radius: 16px 16px 0 0;
+    bottom: 0 !important;
+    top: auto !important;
+}
+
+/* Кнопки инструментов */
+.tool-button {
+    color: #000000;
+    background: #1e1e1e;
+    transition: all 0.2s ease;
+    border-radius: 12px;
+}
+.tool-button:hover {
+    background: #252525;
+    box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.3), 
+                inset -2px -2px 5px rgba(60, 60, 60, 0.1);
+}
+.tool-button.active {
+    background-color: rgba(138, 43, 226, 0.2);
+    color: #bb86fc;
+    box-shadow: inset 3px 3px 7px rgba(0, 0, 0, 0.4), 
+                inset -3px -3px 7px rgba(60, 60, 60, 0.1);
+}
+.tool-button.sub-tool-selected {
+    border: 2px dashed #bb86fc;
+}
+
+/* Область холста */
+.canvas-area {
+    background-color: #1a1a1a;
+    background-image:
+        linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px);
+    background-size: 20px 20px;
+}
+
+/* Кнопка поворота панели */
+.toolbar-rotate-button {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background: #1e1e1e;
+    border: 1px solid #333;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 60;
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5), 
+                -2px -2px 5px rgba(60, 60, 60, 0.1);
+    color: #bb86fc;
+}
+.toolbar.vertical .toolbar-rotate-button {
+    right: -10px;
+    top: -10px;
+}
+.toolbar.horizontal .toolbar-rotate-button {
+    right: -10px;
+    top: -10px;
+}
+
+/* Панели инструментов */
+.tool-panel {
+    position: fixed;
+    background-color: #1e1e1e;
+    border: 1px solid #333;
+    border-radius: 12px;
+    padding: 16px;
+    box-shadow: 8px 8px 20px rgba(0, 0, 0, 0.5), 
+                -8px -8px 20px rgba(60, 60, 60, 0.1);
+    display: none;
+    z-index: 100;
+    min-width: 180px;
+    color: #000000;
+}
+
+/* Текстовая панель */
+.text-panel .text-options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.text-option {
+    display: flex;
+    align-items: center;
+    padding: 6px;
+}
+.text-option label {
+    margin-left: 10px;
+    font-size: 14px;
+    color: #000000;
+}
+.text-option input[type="checkbox"] {
+    accent-color: #bb86fc;
+}
+
+/* Панели линий и фигур */
+.line-options, .shape-options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-height: 400px;
+    overflow-y: auto;
+}
+.option-button {
+    display: flex;
+    align-items: center;
+    padding: 8px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.option-button:hover {
+    background-color: #252525;
+    box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.3), 
+                inset -2px -2px 5px rgba(60, 60, 60, 0.1);
+}
+.option-button.selected {
+    background-color: rgba(138, 43, 226, 0.2);
+    color: #bb86fc;
+    box-shadow: inset 3px 3px 7px rgba(0, 0, 0, 0.4), 
+                inset -3px -3px 7px rgba(60, 60, 60, 0.1);
+}
+.option-icon {
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 10px;
+}
+.option-label {
+    font-size: 14px;
+}
+
+/* Панель ластика */
+.eraser-options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.eraser-option {
+    display: flex;
+    align-items: center;
+    padding: 8px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.eraser-option:hover {
+    background-color: #252525;
+    box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.3), 
+                inset -2px -2px 5px rgba(60, 60, 60, 0.1);
+}
+.eraser-option.selected {
+    background-color: rgba(138, 43, 226, 0.2);
+    color: #bb86fc;
+    box-shadow: inset 3px 3px 7px rgba(0, 0, 0, 0.4), 
+                inset -3px -3px 7px rgba(60, 60, 60, 0.1);
+}
+.eraser-icon {
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 10px;
+}
+.eraser-label {
+    font-size: 14px;
+}
+
+/* Панель цветов */
+.color-panel {
+    width: 240px;
+}
+.color-palette {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-bottom: 16px;
+}
+.color-option {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    cursor: pointer;
+    border: 1px solid #333;
+    transition: all 0.2s ease;
+    box-shadow: 3px 3px 7px rgba(0, 0, 0, 0.3), 
+                -3px -3px 7px rgba(60, 60, 60, 0.1);
+}
+.color-option:hover {
+    transform: scale(1.1);
+    box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.4), 
+                -5px -5px 10px rgba(60, 60, 60, 0.1);
+}
+.color-option.selected {
+    border: 2px solid #bb86fc;
+    box-shadow: 0 0 0 2px #1e1e1e inset, 
+                5px 5px 10px rgba(0, 0, 0, 0.4), 
+                -5px -5px 10px rgba(60, 60, 60, 0.1);
+}
+.custom-color {
+    display: flex;
+    align-items: center;
+    margin-top: 16px;
+    padding-top: 12px;
+    border-top: 1px solid #333;
+}
+.custom-color label {
+    margin-right: 10px;
+    font-size: 14px;
+}
+.custom-color input[type="color"] {
+    width: 40px;
+    height: 40px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    border-radius: 8px;
+}
+.current-color-display {
+    display: flex;
+    align-items: center;
+    margin-top: 12px;
+}
+.current-color-box {
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    border: 1px solid #333;
+    margin-left: 10px;
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3), 
+                -2px -2px 5px rgba(60, 60, 60, 0.1);
+}
+
+/* Панель фигур */
+.shape-panel {
+    transition: height 0.3s ease;
+}
+.basic-shapes {
+    margin-bottom: 12px;
+}
+.more-shapes-button {
+    display: flex;
+    justify-content: center;
+    margin-top: 12px;
+    cursor: pointer;
+    color: #bb86fc;
+    font-size: 14px;
+    align-items: center;
+    padding: 8px;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+.more-shapes-button:hover {
+    background-color: #252525;
+    box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.3), 
+                inset -2px -2px 5px rgba(60, 60, 60, 0.1);
+}
+.more-shapes-button i {
+    margin-left: 6px;
+}
+
+/* Модальное окно фигур */
+.shapes-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: none;
+    z-index: 200;
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(3px);
+}
+.shapes-modal {
+    background-color: #1e1e1e;
+    border-radius: 16px;
+    box-shadow: 10px 10px 30px rgba(0, 0, 0, 0.6), 
+                -10px -10px 30px rgba(60, 60, 60, 0.1);
+    width: 450px;
+    max-width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    padding: 24px;
+    border: 1px solid #333;
+}
+.shapes-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #333;
+}
+.shapes-modal-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: #000000;
+}
+.shapes-modal-close {
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border-radius: 50%;
+    color: rgb(104, 104, 104);
+    background: #252525;
+    transition: all 0.2s ease;
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3), 
+                -2px -2px 5px rgba(60, 60, 60, 0.1);
+}
+.shapes-modal-close:hover {
+    background-color: #333;
+    color: #bb86fc;
+}
+.shapes-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+}
+.shape-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.shape-item:hover {
+    background-color: #252525;
+    box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.3), 
+                inset -2px -2px 5px rgba(60, 60, 60, 0.1);
+}
+.shape-item.selected {
+    background-color: rgba(138, 43, 226, 0.2);
+    color: #bb86fc;
+    box-shadow: inset 3px 3px 7px rgba(0, 0, 0, 0.4), 
+                inset -3px -3px 7px rgba(60, 60, 60, 0.1);
+}
+.shape-icon {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 8px;
+    font-size: 28px;
+}
+.shape-name {
+    font-size: 13px;
+    text-align: center;
+}
+
+/* Контроль размера текста */
+.text-size-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 12px;
+}
+.text-size-button {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background-color: #252525;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3), 
+                -2px -2px 5px rgba(60, 60, 60, 0.1);
+}
+.text-size-button:hover {
+    background-color: #333;
+    color: #bb86fc;
+}
+.text-size-value {
+    font-size: 15px;
+    min-width: 30px;
+    text-align: center;
+}
+
+/* Кнопка показа панели инструментов */
+.show-toolbar-button {
+    position: fixed;
+    width: 46px;
+    height: 46px;
+    border-radius: 12px;
+    background-color: #1e1e1e;
+    border: 1px solid #333;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 40;
+    left: 16px;
+    top: 70px;
+    box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.5), 
+                -5px -5px 15px rgba(60, 60, 60, 0.1);
+    transition: all 0.2s ease;
+    color: #bb86fc;
+}
+.show-toolbar-button:hover {
+    background-color: #252525;
+    box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.5), 
+                -3px -3px 10px rgba(60, 60, 60, 0.1);
+}
+
+/* Панель настроек */
+.settings-panel {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #1e1e1e;
+    border: 1px solid #333;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 10px 10px 30px rgba(0, 0, 0, 0.6), 
+                -10px -10px 30px rgba(60, 60, 60, 0.1);
+    z-index: 200;
+    width: 320px;
+    display: none;
+}
+.settings-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #333;
+}
+.settings-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: #000000;
+}
+.settings-close {
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border-radius: 50%;
+    color: #000000;
+    background: #252525;
+    transition: all 0.2s ease;
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3), 
+                -2px -2px 5px rgba(60, 60, 60, 0.1);
+}
+.settings-close:hover {
+    background-color: #333;
+    color: #bb86fc;
+}
+.settings-section {
+    margin-bottom: 20px;
+}
+.settings-section-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #000000;
+    margin-bottom: 12px;
+}
+.language-selector {
+    display: flex;
+    gap: 10px;
+}
+.language-option {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #333;
+    border-radius: 8px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: #252525;
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3), 
+                -2px -2px 5px rgba(60, 60, 60, 0.1);
+}
+.language-option:hover {
+    background-color: #333;
+}
+.language-option.selected {
+    background-color: #bb86fc;
+    color: #121212;
+    border-color: #bb86fc;
+    box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.2);
+}
+.settings-footer {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid #333;
+}
+.settings-button {
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 3px 3px 7px rgba(0, 0, 0, 0.3), 
+                -3px -3px 7px rgba(60, 60, 60, 0.1);
+}
+.settings-save {
+    background-color: #bb86fc;
+    color: #121212;
+}
+.settings-save:hover {
+    background-color: #c99eff;
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3), 
+                -2px -2px 5px rgba(60, 60, 60, 0.1);
+}
+.settings-cancel {
+    background-color: #252525;
+    color: #000000;
+    margin-right: 12px;
+}
+.settings-cancel:hover {
+    background-color: #333;
+}
+
+/* Обеспечение согласованных размеров кнопок инструментов в горизонтальном режиме */
+.toolbar.horizontal .tool-button {
+    width: 46px;
+    height: 46px;
+    flex-shrink: 0;
+}
+.toolbar.horizontal .p-1 {
+    padding: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.toolbar.horizontal .w-8.h-px {
+    width: 1px;
+    height: 28px;
+    margin: 0 5px;
+    background-color: #333;
+}
+.toolbar.horizontal .toolbar-zoom {
+    display: flex;
+    align-items: center;
+    padding: 0 10px;
+}
+.toolbar.horizontal .toolbar-zoom button {
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+    border-radius: 8px;
+    background: #252525;
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3), 
+                -2px -2px 5px rgba(60, 60, 60, 0.1);
+    transition: all 0.2s ease;
+}
+.toolbar.horizontal .toolbar-zoom button:hover {
+    background: #333;
+    color: #bb86fc;
+}
+
+/* Стилизация полосы прокрутки */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+::-webkit-scrollbar-track {
+    background: #1a1a1a;
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb {
+    background: #333;
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #bb86fc;
+}

@@ -1,0 +1,992 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drawing Tools</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f5f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            padding: 24px;
+            width: 100%;
+            max-width: 500px;
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 24px;
+            font-size: 24px;
+            color: #333;
+        }
+        
+        .tools-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0;
+            margin-bottom: 32px;
+            position: relative;
+            width: 70px;
+            margin: 0 auto;
+        }
+        
+        .tool-button {
+            width: 56px;
+            height: 56px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: white;
+            border: 1px solid #ddd;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+            margin: 8px 0;
+        }
+        
+        .tool-divider {
+            width: 70%;
+            height: 1px;
+            background-color: rgba(0, 0, 0, 0.1);
+            margin: 0;
+        }
+        
+        .tool-button:hover {
+            background-color: #f9f9f9;
+        }
+        
+        .tool-button.active {
+            background-color: #eee;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .tool-button.sub-tool-selected {
+            border: 2px dashed #888;
+        }
+        
+        .tool-icon {
+            transition: transform 0.2s ease;
+        }
+        
+        .tool-button.active .tool-icon {
+            transform: scale(0.9);
+        }
+        
+        .sub-tool-popup {
+            position: absolute;
+            left: 80px;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            display: none;
+            z-index: 10;
+        }
+        
+        .sub-tool-button {
+            width: 56px;
+            height: 56px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+        
+        .sub-tool-button:hover {
+            background-color: #f9f9f9;
+        }
+        
+        .sub-tool-label {
+            text-align: center;
+            margin-top: 8px;
+            font-size: 12px;
+            color: #666;
+        }
+        
+        /* Eraser sub-tools panel */
+        .eraser-panel {
+            position: absolute;
+            left: 80px;
+            top: 0;
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 16px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            display: none;
+            z-index: 10;
+            width: 200px;
+        }
+        
+        .eraser-options {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+        
+        .eraser-option {
+            width: 80px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+        }
+        
+        .eraser-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: white;
+            border: 1px solid #ddd;
+            transition: all 0.2s ease;
+            margin-bottom: 8px;
+        }
+        
+        .eraser-icon:hover {
+            background-color: #f9f9f9;
+        }
+        
+        .eraser-icon.selected {
+            background-color: #eee;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+            border: 2px solid #888;
+        }
+        
+        .eraser-label {
+            font-size: 12px;
+            color: #666;
+            text-align: center;
+        }
+        
+        /* Text formatting panel */
+        .text-format-panel {
+            position: absolute;
+            left: 80px;
+            top: 0;
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 16px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            display: none;
+            z-index: 10;
+            width: 200px;
+        }
+        
+        .format-option {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        
+        .format-option:last-child {
+            margin-bottom: 0;
+        }
+        
+        .format-option label {
+            margin-left: 8px;
+            font-size: 14px;
+            color: #333;
+        }
+        
+        .format-button {
+            width: 36px;
+            height: 36px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: white;
+            border: 1px solid #ddd;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .format-button:hover {
+            background-color: #f9f9f9;
+        }
+        
+        .format-button.active {
+            background-color: #eee;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .thickness-control {
+            display: flex;
+            align-items: center;
+            width: 100%;
+        }
+        
+        .thickness-control label {
+            width: 80px;
+            font-size: 14px;
+            color: #333;
+        }
+        
+        .thickness-control input[type="number"] {
+            width: 60px;
+            padding: 4px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        
+        /* Color palette panel */
+        .color-palette-panel {
+            position: absolute;
+            left: 80px;
+            top: 0;
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 16px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            display: none;
+            z-index: 10;
+            width: 220px;
+        }
+        
+        .color-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+        
+        .color-option {
+            width: 40px;
+            height: 40px;
+            border-radius: 4px;
+            cursor: pointer;
+            border: 1px solid #ddd;
+            transition: transform 0.2s ease;
+        }
+        
+        .color-option:hover {
+            transform: scale(1.1);
+        }
+        
+        .color-option.selected {
+            border: 2px solid #333;
+            box-shadow: 0 0 0 2px white inset;
+        }
+        
+        .custom-color {
+            display: flex;
+            align-items: center;
+            margin-top: 12px;
+        }
+        
+        .custom-color label {
+            margin-right: 8px;
+            font-size: 14px;
+            color: #333;
+        }
+        
+        .custom-color input[type="color"] {
+            width: 40px;
+            height: 40px;
+            border: none;
+            background: none;
+            cursor: pointer;
+        }
+        
+        .current-color-display {
+            display: flex;
+            align-items: center;
+            margin-top: 12px;
+        }
+        
+        .current-color-display label {
+            margin-right: 8px;
+            font-size: 14px;
+            color: #333;
+        }
+        
+        .current-color-box {
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+        
+        .instructions {
+            margin-top: 32px;
+            padding: 16px;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+        }
+        
+        .instructions h3 {
+            font-size: 14px;
+            margin-bottom: 8px;
+            color: #555;
+        }
+        
+        .instructions ul {
+            padding-left: 20px;
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .instructions li {
+            margin-bottom: 4px;
+        }
+        
+        .main-content {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 32px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Drawing Tools</h1>
+        
+        <div class="main-content">
+            <div class="tools-container" id="toolsContainer">
+                <!-- Text Tool -->
+                <div class="tool-button" data-tool="text">
+                    <svg class="tool-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="4 7 4 4 20 4 20 7"></polyline>
+                        <line x1="9" y1="20" x2="15" y2="20"></line>
+                        <line x1="12" y1="4" x2="12" y2="20"></line>
+                    </svg>
+                </div>
+                
+                <div class="tool-divider"></div>
+                
+                <!-- Line Tool -->
+                <div class="tool-button" data-tool="line">
+                    <svg class="tool-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="3" y1="12" x2="21" y2="12"></line>
+                    </svg>
+                </div>
+                
+                <div class="tool-divider"></div>
+                
+                <!-- Shape Tool -->
+                <div class="tool-button" data-tool="shape">
+                    <svg class="tool-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                    </svg>
+                </div>
+                
+                <div class="tool-divider"></div>
+                
+                <!-- Eraser Tool -->
+                <div class="tool-button" data-tool="eraser">
+                    <svg class="tool-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20 20H7L3 16C2.5 15.5 2.5 14.5 3 14L13 4C13.5 3.5 14.5 3.5 15 4L21 10C21.5 10.5 21.5 11.5 21 12L11 22"></path>
+                    </svg>
+                </div>
+                
+                <div class="tool-divider"></div>
+                
+                <!-- Color Palette Tool -->
+                <div class="tool-button" data-tool="palette">
+                    <svg class="tool-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="13.5" cy="6.5" r="2.5"></circle>
+                        <circle cx="17.5" cy="10.5" r="2.5"></circle>
+                        <circle cx="8.5" cy="7.5" r="2.5"></circle>
+                        <circle cx="6.5" cy="12.5" r="2.5"></circle>
+                        <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"></path>
+                    </svg>
+                </div>
+                
+                <!-- Sub-tool Popup (for line, shape) -->
+                <div class="sub-tool-popup" id="subToolPopup">
+                    <div class="sub-tool-button" id="subToolButton">
+                        <!-- Icon will be inserted here by JavaScript -->
+                    </div>
+                    <div class="sub-tool-label" id="subToolLabel">Sub-tool active</div>
+                </div>
+                
+                <!-- Eraser Sub-tools Panel -->
+                <div class="eraser-panel" id="eraserPanel">
+                    <div class="eraser-options">
+                        <div class="eraser-option" data-eraser-type="full">
+                            <div class="eraser-icon" id="fullEraserIcon">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M20 20H7L3 16C2.5 15.5 2.5 14.5 3 14L13 4C13.5 3.5 14.5 3.5 15 4L21 10C21.5 10.5 21.5 11.5 21 12L11 22"></path>
+                                    <line x1="2" y1="22" x2="22" y2="2" stroke="red" stroke-width="1.5"></line>
+                                </svg>
+                            </div>
+                            <div class="eraser-label">Full Eraser</div>
+                        </div>
+                        <div class="eraser-option" data-eraser-type="partial">
+                            <div class="eraser-icon" id="partialEraserIcon">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M20 20H7L3 16C2.5 15.5 2.5 14.5 3 14L13 4C13.5 3.5 14.5 3.5 15 4L21 10C21.5 10.5 21.5 11.5 21 12L11 22"></path>
+                                    <path d="M14 10L10 14" stroke="red" stroke-width="1.5"></path>
+                                </svg>
+                            </div>
+                            <div class="eraser-label">Partial Eraser</div>
+                        </div>
+                    </div>
+                    <div class="eraser-description" id="eraserDescription">
+                        Select an eraser type
+                    </div>
+                </div>
+                
+                <!-- Text Formatting Panel -->
+                <div class="text-format-panel" id="textFormatPanel">
+                    <div class="format-option">
+                        <button class="format-button" id="boldButton">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M6 4h8a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z"></path>
+                                <path d="M6 12h9a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z"></path>
+                            </svg>
+                        </button>
+                        <label>Bold</label>
+                    </div>
+                    
+                    <div class="format-option">
+                        <button class="format-button" id="italicButton">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="19" y1="4" x2="10" y2="4"></line>
+                                <line x1="14" y1="20" x2="5" y2="20"></line>
+                                <line x1="15" y1="4" x2="9" y2="20"></line>
+                            </svg>
+                        </button>
+                        <label>Italic</label>
+                    </div>
+                    
+                    <div class="format-option">
+                        <button class="format-button" id="underlineButton">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M6 3v7a6 6 0 0 0 6 6 6 6 0 0 0 6-6V3"></path>
+                                <line x1="4" y1="21" x2="20" y2="21"></line>
+                            </svg>
+                        </button>
+                        <label>Underline</label>
+                    </div>
+                    
+                    <div class="format-option">
+                        <div class="thickness-control">
+                            <label>Thickness:</label>
+                            <input type="number" id="textThickness" min="1" max="5" value="2">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Color Palette Panel -->
+                <div class="color-palette-panel" id="colorPalettePanel">
+                    <div class="color-grid">
+                        <div class="color-option" style="background-color: #000000;" data-color="#000000"></div>
+                        <div class="color-option" style="background-color: #ffffff;" data-color="#ffffff"></div>
+                        <div class="color-option" style="background-color: #ff0000;" data-color="#ff0000"></div>
+                        <div class="color-option" style="background-color: #00ff00;" data-color="#00ff00"></div>
+                        <div class="color-option" style="background-color: #0000ff;" data-color="#0000ff"></div>
+                        <div class="color-option" style="background-color: #ffff00;" data-color="#ffff00"></div>
+                        <div class="color-option" style="background-color: #ff00ff;" data-color="#ff00ff"></div>
+                        <div class="color-option" style="background-color: #00ffff;" data-color="#00ffff"></div>
+                        <div class="color-option" style="background-color: #ff8800;" data-color="#ff8800"></div>
+                        <div class="color-option" style="background-color: #8800ff;" data-color="#8800ff"></div>
+                        <div class="color-option" style="background-color: #00ff88;" data-color="#00ff88"></div>
+                        <div class="color-option" style="background-color: #888888;" data-color="#888888"></div>
+                    </div>
+                    
+                    <div class="custom-color">
+                        <label>Custom:</label>
+                        <input type="color" id="customColorPicker" value="#000000">
+                    </div>
+                    
+                    <div class="current-color-display">
+                        <label>Current color:</label>
+                        <div class="current-color-box" id="currentColorBox" style="background-color: #000000;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="instructions">
+            <h3>Instructions:</h3>
+            <ul>
+                <li>Click a tool to select it</li>
+                <li>Long press the text tool to see text formatting options</li>
+                <li>Long press the eraser tool to choose between full or partial eraser</li>
+                <li>Long press other tools to see their sub-tool options</li>
+                <li>Use the color palette tool to select colors</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const toolButtons = document.querySelectorAll('.tool-button');
+            const subToolPopup = document.getElementById('subToolPopup');
+            const subToolButton = document.getElementById('subToolButton');
+            const subToolLabel = document.getElementById('subToolLabel');
+            const textFormatPanel = document.getElementById('textFormatPanel');
+            const colorPalettePanel = document.getElementById('colorPalettePanel');
+            const eraserPanel = document.getElementById('eraserPanel');
+            const toolsContainer = document.getElementById('toolsContainer');
+            
+            // Text formatting buttons
+            const boldButton = document.getElementById('boldButton');
+            const italicButton = document.getElementById('italicButton');
+            const underlineButton = document.getElementById('underlineButton');
+            const textThickness = document.getElementById('textThickness');
+            
+            // Eraser options
+            const fullEraserIcon = document.getElementById('fullEraserIcon');
+            const partialEraserIcon = document.getElementById('partialEraserIcon');
+            const eraserDescription = document.getElementById('eraserDescription');
+            const eraserOptions = document.querySelectorAll('.eraser-option');
+            
+            // Color palette elements
+            const colorOptions = document.querySelectorAll('.color-option');
+            const customColorPicker = document.getElementById('customColorPicker');
+            const currentColorBox = document.getElementById('currentColorBox');
+            
+            let activeTool = null;
+            let longPressTimer = null;
+            let currentSubTool = null;
+            let currentPanel = null;
+            
+            // Track which tools have sub-tools selected
+            const selectedSubTools = {
+                text: false,
+                line: false,
+                shape: false,
+                eraser: false
+            };
+            
+            // Text formatting options
+            const textFormatting = {
+                bold: false,
+                italic: false,
+                underline: false,
+                thickness: 2
+            };
+            
+            // Eraser type
+            let eraserType = 'full'; // 'full' or 'partial'
+            
+            // Current color
+            let currentColor = '#000000';
+            
+            // Add event listeners to tool buttons
+            toolButtons.forEach(button => {
+                // Mouse down event (start of potential long press)
+                button.addEventListener('mousedown', function(e) {
+                    const toolName = this.getAttribute('data-tool');
+                    
+                    // Set active tool
+                    setActiveTool(toolName);
+                    
+                    // Start long press timer
+                    longPressTimer = setTimeout(() => {
+                        if (toolName === 'text') {
+                            showTextFormatPanel();
+                        } else if (toolName === 'palette') {
+                            showColorPalettePanel();
+                        } else if (toolName === 'eraser') {
+                            showEraserPanel();
+                        } else {
+                            showSubTool(toolName);
+                        }
+                    }, 500); // 500ms for long press
+                });
+                
+                // Mouse up event (end of potential long press)
+                button.addEventListener('mouseup', function() {
+                    clearLongPressTimer();
+                });
+                
+                // Mouse leave event (cancel long press if mouse leaves button)
+                button.addEventListener('mouseleave', function() {
+                    clearLongPressTimer();
+                });
+                
+                // Touch events for mobile
+                button.addEventListener('touchstart', function(e) {
+                    e.preventDefault();
+                    const toolName = this.getAttribute('data-tool');
+                    
+                    // Set active tool
+                    setActiveTool(toolName);
+                    
+                    // Start long press timer
+                    longPressTimer = setTimeout(() => {
+                        if (toolName === 'text') {
+                            showTextFormatPanel();
+                        } else if (toolName === 'palette') {
+                            showColorPalettePanel();
+                        } else if (toolName === 'eraser') {
+                            showEraserPanel();
+                        } else {
+                            showSubTool(toolName);
+                        }
+                    }, 500); // 500ms for long press
+                });
+                
+                button.addEventListener('touchend', function(e) {
+                    e.preventDefault();
+                    clearLongPressTimer();
+                });
+                
+                button.addEventListener('touchcancel', function(e) {
+                    e.preventDefault();
+                    clearLongPressTimer();
+                });
+            });
+            
+            // Sub-tool button click event
+            subToolButton.addEventListener('click', function() {
+                if (currentSubTool) {
+                    toggleSubTool(currentSubTool);
+                    hideSubTool();
+                }
+            });
+            
+            // Eraser options events
+            eraserOptions.forEach(option => {
+                option.addEventListener('click', function() {
+                    const type = this.getAttribute('data-eraser-type');
+                    setEraserType(type);
+                });
+            });
+            
+            // Text formatting buttons events
+            boldButton.addEventListener('click', function() {
+                textFormatting.bold = !textFormatting.bold;
+                this.classList.toggle('active', textFormatting.bold);
+            });
+            
+            italicButton.addEventListener('click', function() {
+                textFormatting.italic = !textFormatting.italic;
+                this.classList.toggle('active', textFormatting.italic);
+            });
+            
+            underlineButton.addEventListener('click', function() {
+                textFormatting.underline = !textFormatting.underline;
+                this.classList.toggle('active', textFormatting.underline);
+            });
+            
+            textThickness.addEventListener('input', function() {
+                textFormatting.thickness = this.value;
+            });
+            
+            // Color options events
+            colorOptions.forEach(option => {
+                option.addEventListener('click', function() {
+                    const color = this.getAttribute('data-color');
+                    setCurrentColor(color);
+                    
+                    // Update selected state
+                    colorOptions.forEach(opt => opt.classList.remove('selected'));
+                    this.classList.add('selected');
+                });
+            });
+            
+            // Custom color picker event
+            customColorPicker.addEventListener('input', function() {
+                setCurrentColor(this.value);
+                
+                // Remove selected state from preset colors
+                colorOptions.forEach(opt => opt.classList.remove('selected'));
+            });
+            
+            // Click outside to close popups
+            document.addEventListener('mousedown', function(e) {
+                // Check for sub-tool popup
+                if (subToolPopup.style.display === 'block') {
+                    const isClickInside = subToolPopup.contains(e.target) || 
+                                         Array.from(toolButtons).some(button => 
+                                             button.contains(e.target) && 
+                                             button.getAttribute('data-tool') === currentSubTool
+                                         );
+                    
+                    if (!isClickInside) {
+                        hideSubTool();
+                    }
+                }
+                
+                // Check for text format panel
+                if (textFormatPanel.style.display === 'block') {
+                    const isClickInside = textFormatPanel.contains(e.target) || 
+                                         Array.from(toolButtons).some(button => 
+                                             button.contains(e.target) && 
+                                             button.getAttribute('data-tool') === 'text'
+                                         );
+                    
+                    if (!isClickInside) {
+                        hideTextFormatPanel();
+                    }
+                }
+                
+                // Check for color palette panel
+                if (colorPalettePanel.style.display === 'block') {
+                    const isClickInside = colorPalettePanel.contains(e.target) || 
+                                         Array.from(toolButtons).some(button => 
+                                             button.contains(e.target) && 
+                                             button.getAttribute('data-tool') === 'palette'
+                                         );
+                    
+                    if (!isClickInside) {
+                        hideColorPalettePanel();
+                    }
+                }
+                
+                // Check for eraser panel
+                if (eraserPanel.style.display === 'block') {
+                    const isClickInside = eraserPanel.contains(e.target) || 
+                                         Array.from(toolButtons).some(button => 
+                                             button.contains(e.target) && 
+                                             button.getAttribute('data-tool') === 'eraser'
+                                         );
+                    
+                    if (!isClickInside) {
+                        hideEraserPanel();
+                    }
+                }
+            });
+            
+            // Function to set active tool
+            function setActiveTool(toolName) {
+                // Remove active class from all tools
+                toolButtons.forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                
+                // Add active class to selected tool
+                const selectedTool = document.querySelector(`.tool-button[data-tool="${toolName}"]`);
+                if (selectedTool) {
+                    selectedTool.classList.add('active');
+                    activeTool = toolName;
+                }
+            }
+            
+            // Function to clear long press timer
+            function clearLongPressTimer() {
+                if (longPressTimer) {
+                    clearTimeout(longPressTimer);
+                    longPressTimer = null;
+                }
+            }
+            
+            // Function to show sub-tool popup
+            function showSubTool(toolName) {
+                // Hide any open panels first
+                hideAllPanels();
+                
+                currentSubTool = toolName;
+                currentPanel = subToolPopup;
+                
+                // Get the icon from the main tool
+                const toolIcon = document.querySelector(`.tool-button[data-tool="${toolName}"] svg`).cloneNode(true);
+                
+                // Clear previous content and add the icon
+                subToolButton.innerHTML = '';
+                subToolButton.appendChild(toolIcon);
+                
+                // Update label
+                subToolLabel.textContent = selectedSubTools[toolName] ? 'Main tool active' : 'Sub-tool active';
+                
+                // Position the popup next to the tool
+                const toolButton = document.querySelector(`.tool-button[data-tool="${toolName}"]`);
+                const toolRect = toolButton.getBoundingClientRect();
+                const containerRect = toolsContainer.getBoundingClientRect();
+                
+                // Show the popup
+                subToolPopup.style.display = 'block';
+                
+                // Position the popup next to the specific tool
+                subToolPopup.style.top = (toolRect.top - containerRect.top + toolRect.height/2 - subToolPopup.offsetHeight/2) + 'px';
+                
+                // Remove dotted border if this is a repeated long-press
+                if (subToolButton.style.border === '2px dashed rgb(136, 136, 136)') {
+                    subToolButton.style.border = 'none';
+                }
+            }
+            
+            // Function to show eraser panel
+            function showEraserPanel() {
+                // Hide any open panels first
+                hideAllPanels();
+                
+                currentPanel = eraserPanel;
+                
+                // Position the panel next to the eraser tool
+                const eraserButton = document.querySelector('.tool-button[data-tool="eraser"]');
+                const toolRect = eraserButton.getBoundingClientRect();
+                const containerRect = toolsContainer.getBoundingClientRect();
+                
+                eraserPanel.style.top = (toolRect.top - containerRect.top) + 'px';
+                eraserPanel.style.display = 'block';
+                
+                // Update selected eraser type
+                updateEraserSelection();
+            }
+            
+            // Function to set eraser type
+            function setEraserType(type) {
+                eraserType = type;
+                updateEraserSelection();
+                
+                // Update the main eraser tool appearance
+                const eraserButton = document.querySelector('.tool-button[data-tool="eraser"]');
+                
+                if (type === 'partial') {
+                    eraserButton.classList.add('sub-tool-selected');
+                } else {
+                    eraserButton.classList.remove('sub-tool-selected');
+                }
+                
+                // Update description
+                if (type === 'full') {
+                    eraserDescription.textContent = 'Erases entire line';
+                } else {
+                    eraserDescription.textContent = 'Erases only where touched';
+                }
+            }
+            
+            // Function to update eraser selection UI
+            function updateEraserSelection() {
+                if (eraserType === 'full') {
+                    fullEraserIcon.classList.add('selected');
+                    partialEraserIcon.classList.remove('selected');
+                } else {
+                    fullEraserIcon.classList.remove('selected');
+                    partialEraserIcon.classList.add('selected');
+                }
+            }
+            
+            // Function to show text format panel
+            function showTextFormatPanel() {
+                // Hide any open panels first
+                hideAllPanels();
+                
+                currentPanel = textFormatPanel;
+                
+                // Position the panel next to the text tool
+                const textButton = document.querySelector('.tool-button[data-tool="text"]');
+                const toolRect = textButton.getBoundingClientRect();
+                const containerRect = toolsContainer.getBoundingClientRect();
+                
+                textFormatPanel.style.top = (toolRect.top - containerRect.top) + 'px';
+                textFormatPanel.style.display = 'block';
+                
+                // Update button states based on current formatting
+                boldButton.classList.toggle('active', textFormatting.bold);
+                italicButton.classList.toggle('active', textFormatting.italic);
+                underlineButton.classList.toggle('active', textFormatting.underline);
+                textThickness.value = textFormatting.thickness;
+            }
+            
+            // Function to show color palette panel
+            function showColorPalettePanel() {
+                // Hide any open panels first
+                hideAllPanels();
+                
+                currentPanel = colorPalettePanel;
+                
+                // Position the panel next to the palette tool
+                const paletteButton = document.querySelector('.tool-button[data-tool="palette"]');
+                const toolRect = paletteButton.getBoundingClientRect();
+                const containerRect = toolsContainer.getBoundingClientRect();
+                
+                colorPalettePanel.style.top = (toolRect.top - containerRect.top) + 'px';
+                colorPalettePanel.style.display = 'block';
+                
+                // Update color picker to current color
+                customColorPicker.value = currentColor;
+                
+                // Update selected color in grid
+                colorOptions.forEach(option => {
+                    if (option.getAttribute('data-color') === currentColor) {
+                        option.classList.add('selected');
+                    } else {
+                        option.classList.remove('selected');
+                    }
+                });
+            }
+            
+            // Function to hide all panels
+            function hideAllPanels() {
+                hideSubTool();
+                hideTextFormatPanel();
+                hideColorPalettePanel();
+                hideEraserPanel();
+            }
+            
+            // Function to hide sub-tool popup
+            function hideSubTool() {
+                subToolPopup.style.display = 'none';
+                currentSubTool = null;
+                if (currentPanel === subToolPopup) currentPanel = null;
+            }
+            
+            // Function to hide text format panel
+            function hideTextFormatPanel() {
+                textFormatPanel.style.display = 'none';
+                if (currentPanel === textFormatPanel) currentPanel = null;
+            }
+            
+            // Function to hide color palette panel
+            function hideColorPalettePanel() {
+                colorPalettePanel.style.display = 'none';
+                if (currentPanel === colorPalettePanel) currentPanel = null;
+            }
+            
+            // Function to hide eraser panel
+            function hideEraserPanel() {
+                eraserPanel.style.display = 'none';
+                if (currentPanel === eraserPanel) currentPanel = null;
+            }
+            
+            // Function to toggle sub-tool selection
+            function toggleSubTool(toolName) {
+                selectedSubTools[toolName] = !selectedSubTools[toolName];
+                
+                // Update the main tool button appearance
+                const toolButton = document.querySelector(`.tool-button[data-tool="${toolName}"]`);
+                
+                if (selectedSubTools[toolName]) {
+                    toolButton.classList.add('sub-tool-selected');
+                } else {
+                    toolButton.classList.remove('sub-tool-selected');
+                }
+            }
+            
+            // Function to set current color
+            function setCurrentColor(color) {
+                currentColor = color;
+                currentColorBox.style.backgroundColor = color;
+            }
+            
+            // Initialize eraser type
+            setEraserType('full');
+        });
+    </script>
+</body>
+</html>
